@@ -129,7 +129,6 @@ body.dark-theme {
 
 .change-theme:hover {
   color: var(--first-color);
-  text-shadow: #FFF 0px 0px 5px, #FFF 0px 0px 10px, #FFF 0px 0px 15px, var(--first-color) 0px 0px 20px, var(--first-color)  0px 0px 30px, var(--first-color)  0px 0px 40px, var(--first-color)  0px 0px 50px, var(--first-color)  0px 0px 75px;
 }
 
 /*==================== BASE ====================*/
@@ -380,10 +379,11 @@ img {
 .home__blob-img {
   width: 215px;
   transition: transform 0.3s ease;
+  transform-origin: center;
 }
 
-.home__blob-img :hover{
-  transform: scale(1.5);
+.home__blob-img:hover{
+  transform: scale(1.15) translateY(-10px);
 }
 
 .home__data {
@@ -514,11 +514,24 @@ img {
 }
 
 /*==================== ABOUT ====================*/
-.about__img {
-  width: 250px;
-  border-radius: 25px;
+.about__img-container {
   justify-self: center;
   align-items: center;
+  width: 450px;
+  height: 250px;
+  overflow: hidden; /* Memastikan efek zoom hanya berada di dalam kotak 250px */
+  border-radius: 25px;
+}
+
+.about__img {
+  width: 100%;
+  border-radius: 25px;
+  transition: transform 0.5s ease;
+  transform-origin: center;
+}
+
+.about__img:hover {
+  transform: scale(1.25);
 }
 
 .about__description {
@@ -730,6 +743,7 @@ img {
   font-family: var(--body-font);
   font-size: var(--normal-font-size);
   font-weight: var(--font-semi-bold);
+  color: var(--first-color);
 }
 
 .qualification__titlee {
@@ -1175,7 +1189,7 @@ img {
   }
 
   .nav__menu {
-    padding: 0 0.25rem 4rem 2rem;
+    padding: 2.5rem 2rem 2rem 2.5rem;
   }
 
   .nav__list {
@@ -1226,7 +1240,7 @@ img {
   }
 
   .about__img {
-    width: 250px;
+    width: 300px;
   }
 
   .project__img {

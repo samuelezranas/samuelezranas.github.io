@@ -1,3 +1,50 @@
+/*==================== AUTO SCROLL ====================*/
+let isAutoScrolling = false;
+let autoScrollInterval;
+
+function startAutoScroll() {
+    const scrollButton = document.getElementById('scrollButton');
+
+    scrollButton.addEventListener('click', function(e) {
+        if (!isAutoScrolling) {
+            isAutoScrolling = true;
+            autoScrollInterval = setInterval(autoScroll, 200);
+        }
+    });
+
+    // Matikan auto-scroll saat scroll ke atas
+    document.addEventListener('wheel', function(e) {
+        if (e.deltaY < 0 && isAutoScrolling) {
+            clearInterval(autoScrollInterval);
+            isAutoScrolling = false;
+        }
+    });
+}
+
+function autoScroll() {
+    const scrollStep = window.innerHeight / 50; // Langkah guliran, disesuaikan dengan tinggi jendela
+
+    const currentPosition = window.scrollY || document.documentElement.scrollTop;
+    window.scrollTo(0, currentPosition + scrollStep);
+
+    if (window.innerHeight + currentPosition >= document.body.offsetHeight || currentPosition + scrollStep >= document.body.offsetHeight) {
+        isAutoScrolling = false;
+        clearInterval(autoScrollInterval);
+    }
+}
+
+startAutoScroll();
+
+const skillsHeaders = document.querySelectorAll('.skills__header');
+
+skillsHeaders.forEach(header => {
+  header.addEventListener('click', function() {
+    const parent = this.parentElement;
+    const content = parent.querySelector('.skills__content');
+    content.classList.toggle('skills__open');
+  });
+});
+
 /*==================== MENU SHOW Y HIDDEN ====================*/
 const navMenu = document.getElementById("nav-menu"),
   navToggle = document.getElementById("nav-toggle"),
