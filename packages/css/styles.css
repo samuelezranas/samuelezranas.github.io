@@ -1,5 +1,5 @@
 /* ==================== GOOGLE FONTS ====================*/
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,900;1,400;1,500;1,600;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,800;0,900;1,400;1,500;1,600;1,800;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Sawarabi+Gothic&display=swap');
 
@@ -16,15 +16,15 @@
   --first-color-second: hsl(var(--hue-color), 69%, 61%);
   --first-color-alt: hsl(var(--hue-color), 57%, 53%);
   --first-color-lighter: hsl(var(--hue-color), 92%, 85%);
+  --first-color-gradient: linear-gradient(to right, var(--first-color), transparent);
   --title-color: hsl(var(--hue-color), 8%, 15%);
   --text-color: hsl(var(--hue-color), 8%, 45%);
   --text-color-light: hsl(var(--hue-color), 8%, 65%);
   --input-color: hsl(var(--hue-color), 70%, 96%);
   --body-color: hsl(var(--hue-color), 60%, 99%);
   --container-color: #fff;
-  --scroll-bar-color: hsl(var(--hue-color), 12%, 90%);
-  --scroll-thumb-color: hsl(var(--hue-color), 12%, 80%);
-
+  --scroll-bar-color: hsl(var(--hue-color), 92%, 85%);
+  --scroll-thumb-color: hsl(var(--hue-color), 69%, 61%);
   /*========== Font and typography ==========*/
   --body-font: "Montserrat", sans-serif;
   --style-font: "Caveat", cursive;
@@ -42,6 +42,7 @@
   --font-medium1: 400;
   --font-medium2: 500;
   --font-semi-bold: 600;
+  --font-bold: 800;
   --font-black: 900;
 
   /*========== Margenes Bottom ==========*/
@@ -62,7 +63,7 @@
 }
 
 /* Font size for large devices */
-@media screen and (min-width: 1000px) {
+@media screen and (min-width: 968px) {
   :root {
     --big-font-size: 3rem;
     --h1-font-size: 2.25rem;
@@ -85,7 +86,7 @@ body.dark-theme {
   --body-color: hsl(0, 5%, 5%);
   --container-color: hsl(var(--hue-color), 29%, 16%);
   --scroll-bar-color: hsl(var(--hue-color), 12%, 48%);
-  --scroll-thumb-color: hsl(var(--hue-color), 12%, 36%);
+  --scroll-thumb-color: hsl(var(--hue-color), 69%, 61%);
 }
 
 /*========== LOADER ==========*/
@@ -179,18 +180,18 @@ img {
 }
 
 .section__title {
-  font-family: "Sawarabi Gothic", sans-serif;
+  font-family: var(--body-font);
   font-size: var(--h1-font-size);
   background: linear-gradient(to right, var(--first-color), var(--first-color-alt));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   cursor: pointer;
+  transition: 0.1s ease;
 }
 
 .section__title:hover {
-  font-family: var(--style-font);
-  font-size: 2.7rem;
+  transform: scale(1.1);
 }
 
 .section__subtitle {
@@ -263,7 +264,7 @@ img {
   color: var(--first-color);
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 767px) {
   .nav__menu {
     position: relative;
     top: -750%;
@@ -304,9 +305,8 @@ img {
 }
 
 .nav__link:hover {
-  font-family: var(--style-font);
+  font-family: var(--body-font);
   font-style: oblique;
-  font-size: 1.25rem;
   color: var(--first-color);
 }
 
@@ -383,7 +383,7 @@ img {
 }
 
 .home__blob-img:hover{
-  transform: scale(1.15) translateY(-10px);
+  transform: scale(1.175) translateY(-10px);
 }
 
 .home__data {
@@ -469,8 +469,9 @@ img {
 
 .button:hover {
   background-color: var(--container-color);
+  border: var(--first-color) 2px solid;
   color: var(--first-color);
-  box-shadow: 0 0 10px var(--first-color);
+  box-shadow: 10px 10px var(--first-color);
   font-weight: var(--font-medium2);
 }
 
@@ -484,6 +485,8 @@ img {
   background-color: #fff;
   text-align: center;
   color: var(--first-color);
+  box-shadow: 0 0 2px var(--first-color);
+  border: 2px var(--first-color);
 }
 
 .button--white:hover {
@@ -521,6 +524,7 @@ img {
   height: 250px;
   overflow: hidden; /* Memastikan efek zoom hanya berada di dalam kotak 250px */
   border-radius: 25px;
+  border: var(--first-color) 5px solid;
 }
 
 .about__img {
@@ -535,8 +539,9 @@ img {
 }
 
 .about__description {
+  color: var(--text-color);
   text-align: justify;
-  margin-bottom: var(--mb-1);
+  margin-bottom: var(--mb-0-5);
 }
 
 .about__info {
@@ -631,7 +636,7 @@ img {
 
 .skills__name {
   font-size: var(--normal-font-size);
-  font-weight: var(--font-medium2);
+  font-weight: var(--font-medium1);
 }
 
 .skills__bar,
@@ -715,17 +720,20 @@ img {
 .qualification__tabs {
   display: flex;
   justify-content: space-evenly;
-  margin-bottom: var(--mb-2);
+  padding-top: var(--mb-1);
+  margin-top: var(--mb-2-5);
+  margin-bottom: var(--mb-1);
 }
 
 .qualification__button {
   font-size: var(--h3-font-size);
+  color: var(--text-color);
   font-weight: var(--font-medium2);
   cursor: pointer;
 }
 
 .qualification__button:hover {
-  color: var(--first-color);
+  color: var(--first-color-alt);
 }
 
 .qualification__icon {
@@ -739,38 +747,64 @@ img {
   column-gap: 1.5rem;
 }
 
-.qualification__title {
+.qualification__title,
+.qualification__title2 {
   font-family: var(--body-font);
   font-size: var(--normal-font-size);
   font-weight: var(--font-semi-bold);
   color: var(--first-color);
 }
 
-.qualification__titlee {
+.qualification__title2 {
+  text-align: right;
+}
+
+.qualification__titlee,
+.qualification__titlee2 {
   font-family: var(--body-font);
   font-size: var(--normal-font-size);
   font-weight: var(--font-semi-bold);
   color: var(--first-color);
 }
 
-.qualification__subtitle {
-  display: inline-block;
-  font-family: var(--body-font);
-  font-weight: var(--font-semi-bold);
-  font-size: var(--small-font-size);
+.qualification__titlee2 {
+  text-align: right;
 }
 
-.qualification__subtitlee {
+.qualification__subtitle,
+.qualification__subtitle2 {
   display: inline-block;
   font-family: var(--body-font);
+  font-weight: var(--font-medium2);
+  font-size: var(--smaller-font-size);
+  margin-bottom: var(--mb-0-25);
+}
+
+.qualification__subtitle2 {
+  text-align: right;
+}
+
+.qualification__subtitlee,
+.qualification__subtitlee2 {
+  display: inline-block;
+  font-family: var(--body-font);
+  font-weight: var(--font-medium2);
   font-size: var(--smaller-font-size);
   margin-bottom: var(--mb-0-5);
 }
 
-.qualification__calendar {
+.qualification__subtitlee2 {
+  text-align: right;
+}
+
+.qualification__calendar,
+.qualification__calendar2 {
   font-size: var(--smaller-font-size);
   color: var(--text-color-light);
-  /* margin-bottom: var(--mb-1) */
+}
+
+.qualification__calendar2 {
+  text-align: right;
 }
 
 .qualification__rounder {
@@ -805,7 +839,7 @@ img {
 
 /*==================== portofolio ====================*/
 .portofolio__container {
-  overflow: initial;
+  overflow:visible;
 }
 
 .kontener {
@@ -817,33 +851,31 @@ img {
   padding: 0 1.5rem;
 }
 
-.portofolio__img {
-  width: 300px;
-  border-radius: 0.5rem;
+.portofolio__img-container {
   justify-self: center;
+  align-items: center;
+  width: 350px;
+  overflow: hidden; /* Memastikan efek zoom hanya berada di dalam kotak 250px */
+  border-radius: 25px;
+  box-shadow: 0 0 2px var(--first-color);
 }
-  /* CSS to change image on hover of button 1 */
-  #button1:hover ~ .portofolio__img {
-    /* Styles for image change when button 1 is hovered */
-    /* Example: */
-    content: url('./packages/images/porto-bali-cure.jpgg');
-  }
-  
-  /* CSS to change image on hover of button 2 */
-  #button2:hover ~ .portofolio__img {
-    /* Styles for image change when button 2 is hovered */
-    /* Example: */
-    content: url('./packages/images/porto-cadmus.jpg');
-  }
-  #button3:hover ~ .portofolio__img {
-    /* Styles for image change when button 2 is hovered */
-    /* Example: */
-    content: url('./packages/images/porto-redesign.png');
-  }
+
+.portofolio__img {
+  width: 100%;
+  border-radius: 25px;
+  transition: transform 0.5s ease;
+  transform-origin: center;
+}
+
+.portofolio__img:hover{
+  transform: scale(1.05);
+}
 
 .portofolio__title {
+  text-align: center;
   font-size: var(--h2-font-size);
-  font-weight: var(--font-black);
+  font-weight: var(--font-bold);
+  margin-top: var(--mb-0-25);
   margin-bottom: var(--mb-0-5);
 }
 
@@ -855,7 +887,7 @@ img {
 
 .portofolio__description {
   text-align: justify;
-  margin-bottom: var(--mb-0-75);
+  margin-bottom: var(--mb-1-5);
 }
 
 .portofolio__button:hover .button__icon {
@@ -923,9 +955,27 @@ img {
   color: #fff;
 }
 
-.project__img {
-  width: 232px;
+.project__img-container {
+  display: flex;
   justify-self: center;
+  align-items: center;
+  width: 725px;
+  height: 350px;
+  border-radius: 25px;
+  box-shadow: 0 0 2px var(--first-color);
+  overflow: hidden; 
+}
+
+.project__img {
+  width: 100%;
+  border-radius: 25px;
+  transition: transform 0.5s ease;
+  transform-origin: center;
+  overflow: hidden;
+}
+
+.project__img:hover {
+  transform: scale(1.1);
 }
 
 .layer{
@@ -950,32 +1000,23 @@ img {
 
 .work-list{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
-  grid-auto-columns: minmax(450px, 1fr); /* Tambahkan properti ini */
+  grid-template-columns: repeat(1, minmax(250px, 1fr)); /* 3 kolom secara horizontal */
+  grid-auto-columns: minmax(250px, 1fr); /* 1 kolom secara vertikal */
   grid-gap: 25px;
   margin-top: 25px;
-
+  border: 2px solid var(--first-color);
+  box-shadow: rgba(221, 81, 5, 0.4) 5px 5px, rgba(221, 81, 5, 0.3) 10px 10px, rgba(221, 81, 5, 0.2) 15px 15px, rgba(221, 81, 5, 0.1) 20px 20px, rgba(221, 81, 5, 0.05) 25px 25px;
+  padding: 2.5rem;
+  border-radius: 2rem;
 }
 
 .work{
+  margin-bottom: var(--mb-1-5);
   border-radius: 10px;
   position: relative;
-  overflow: hidden;
+  overflow:visible;
 }
 
-.work__img{
-  width: 125%;
-  border-radius: 15px;
-  display: block;
-  transition: transform 0.5s;
-}
-
-.work:hover img{
-  transform: scale(1.075);
-}
-.work:hover .layer{
-  height: 100%;
-}
 
 /*==================== TESTIMONIAL ====================*/
 .testimonial__data,
@@ -1086,7 +1127,7 @@ img {
   cursor: pointer;
 }
 
-.footer__title :hover{
+.footer__title:hover{
   font-family: var(--style-font);
   font-weight: var(--font-semi-bold);
   font-size:x-large;
@@ -1177,6 +1218,33 @@ img {
 
 /*==================== MEDIA QUERIES ====================*/
 /* For small devices */
+@media screen and (min-width: 380px) {
+  .about__img,
+  .about__img-container {
+    width: 300px;
+    height: auto;
+  }
+  
+  .about__description {
+    font-size: 14px;
+    text-align: justify;
+  }
+
+  .project__img-container {
+    max-width: 300px;
+    height: auto;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .project__img {
+    width: 100%; /* Atur lebar maksimum gambar */
+    height: auto; /* Biarkan tinggi otomatis menyesuaikan proporsi */
+    object-fit: cover; /* Memastikan gambar mengisi container tanpa kehilangan aspek */
+  }
+}
 @media screen and (max-width: 380px) {
   .container {
     margin-left: var(--mb-1);
@@ -1196,6 +1264,14 @@ img {
     column-gap: 0;
   }
 
+  .nav__logo {
+   font-size: var(--body-font);
+  }
+
+  .nav__logo:hover {
+    font-size: var(--normal-font-size);
+   }
+
   .home__content {
     grid-template-columns: 0.35fr 3fr;
   }
@@ -1213,11 +1289,16 @@ img {
   }
 
   .home__description {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .home__button {
     font-size: 20px;
+  }
+
+  .work-list {
+    grid-template-columns: repeat(1, minmax(150px, 1fr)); /* 3 kolom secara horizontal */
+    grid-auto-columns: minmax(150px, 1fr);
   }
 
   .skills__title {
@@ -1243,9 +1324,31 @@ img {
     width: 300px;
   }
 
-  .project__img {
-    width: 200px;
+  .about__img-container {
+    width: 300px;
+    height: auto;
   }
+
+  .about__description {
+    font-size: 14px;
+    text-align: justify;
+  }
+
+  .project__img-container {
+    max-width: 250px;
+    height: auto;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .project__img {
+    width: 100%; /* Atur lebar maksimum gambar */
+    height: auto; /* Biarkan tinggi otomatis menyesuaikan proporsi */
+    object-fit: cover; /* Memastikan gambar mengisi container tanpa kehilangan aspek */
+  }
+
 
   .testimonial__header,
   .testimonial__data {
@@ -1277,8 +1380,46 @@ img {
     order: 1;
     justify-self: center;
   }
+
   .about__img {
-    width: 350px;
+    width: 350px; /* Atur lebar gambar */
+    display: block; /* Pastikan gambar diatur sebagai blok */
+    margin: auto; /* Mengatur margin auto secara vertikal dan horizontal */
+}
+
+.about__img-container {
+    width: 250px; /* Atur lebar container */
+    height: 200px; /* Atur tinggi container */
+    display: flex; /* Menggunakan Flexbox */
+    justify-content: center; /* Menengahkan secara horizontal */
+    align-items: center; /* Menengahkan secara vertikal */
+}
+
+  .about__description {
+    /* Aturan CSS untuk layar dengan lebar minimum 500px */
+    font-size: 16px;
+    /* Contoh: memperbesar ukuran font untuk tampilan yang lebih besar */
+    padding: 10px;
+    /* Contoh: menambahkan ruang padding */
+  }
+
+  .project__img {
+    width: 350px; /* Atur lebar gambar */
+    display: block; /* Pastikan gambar diatur sebagai blok */
+    margin: auto; /* Mengatur margin auto secara vertikal dan horizontal */
+}
+
+  .project__img-container {
+    width: 250px; /* Atur lebar container */
+    height: 200px; /* Atur tinggi container */
+    display: flex; /* Menggunakan Flexbox */
+    justify-content: center; /* Menengahkan secara horizontal */
+    align-items: center; /* Menengahkan secara vertikal */
+  }
+  .project__img,
+  .project__img-container {
+    max-width: 300px;
+    height: auto;
   }
 
   .about__container,
@@ -1382,6 +1523,10 @@ img {
     .about__buttons {
       justify-content: initial;
     }
+    .work-list {
+      grid-template-columns: repeat(1, minmax(500px, 1fr)); /* 3 kolom secara horizontal */
+      grid-auto-columns: minmax(500px, 1fr);
+    }
     .qualification__tabs {
       justify-content: center;
     }
@@ -1391,6 +1536,11 @@ img {
 
     .qualification__sections {
       grid-template-columns: 0.5fr;
+    }
+    .project__img,
+    .project__img-container {
+      width: 500px;
+      max-width: 750px;
     }
     .services__container {
       grid-template-columns: repeat(3, 218px);
@@ -1421,9 +1571,8 @@ img {
     .project__container {
       background-color: var(--first-color-second);
       border-radius: 1rem;
-      padding: 3rem 2.5rem 0;
       grid-template-columns: 1fr max-content;
-      column-gap: 3rem;
+      column-gap: 5rem;
     }
     .project__data {
       padding-top: 0.8rem;
@@ -1472,8 +1621,9 @@ img {
     column-gap: 5rem;
   }
 
+
   .project__container {
-    padding-bottom: 30px;
+    padding-bottom: 50rem;
   }
 
   .swiper-portofolio-icon {
@@ -1497,5 +1647,12 @@ img {
   }
   .about__img {
     width: 500px;
+  }
+}
+
+@media screen and (min-width: 1500px) {
+  .project__img,
+  .project__img-container {
+    width: 725px;
   }
 }

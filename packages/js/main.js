@@ -4,36 +4,37 @@ let autoScrollInterval;
 
 function startAutoScroll() {
     const scrollButton = document.getElementById('scrollButton');
+    const scrollSpeed = 10; // Kecepatan scroll (ganti nilai sesuai keinginan)
 
     scrollButton.addEventListener('click', function(e) {
         if (!isAutoScrolling) {
             isAutoScrolling = true;
-            autoScrollInterval = setInterval(autoScroll, 200);
+            autoScrollInterval = setInterval(function() {
+                window.scrollBy(0, scrollSpeed);
+            }, 100); // Mengatur interval auto-scroll menjadi 100ms
         }
     });
 
-    // Matikan auto-scroll saat scroll ke atas
-    document.addEventListener('wheel', function(e) {
-        if (e.deltaY < 0 && isAutoScrolling) {
+    // Stop auto-scroll saat scroll ke atas
+    let isScrollingUp = false;
+    let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    window.addEventListener('scroll', function() {
+        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+        if (currentScroll > lastScrollTop) {
+            isScrollingUp = false;
+        } else {
+            isScrollingUp = true;
+        }
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // For Mobile or negative scrolling
+        if (isAutoScrolling && isScrollingUp) {
             clearInterval(autoScrollInterval);
             isAutoScrolling = false;
         }
     });
 }
 
-function autoScroll() {
-    const scrollStep = window.innerHeight / 50; // Langkah guliran, disesuaikan dengan tinggi jendela
-
-    const currentPosition = window.scrollY || document.documentElement.scrollTop;
-    window.scrollTo(0, currentPosition + scrollStep);
-
-    if (window.innerHeight + currentPosition >= document.body.offsetHeight || currentPosition + scrollStep >= document.body.offsetHeight) {
-        isAutoScrolling = false;
-        clearInterval(autoScrollInterval);
-    }
-}
-
 startAutoScroll();
+
 
 const skillsHeaders = document.querySelectorAll('.skills__header');
 
