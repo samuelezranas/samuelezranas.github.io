@@ -529,6 +529,7 @@ img {
 
 .about__img {
   width: 100%;
+  scale: 1.1;
   border-radius: 25px;
   transition: transform 0.5s ease;
   transform-origin: center;
@@ -776,7 +777,7 @@ img {
   display: inline-block;
   font-family: var(--body-font);
   font-weight: var(--font-medium2);
-  font-size: var(--smaller-font-size);
+  font-size: var(--small-font-size);
   margin-bottom: var(--mb-0-25);
 }
 
@@ -789,7 +790,7 @@ img {
   display: inline-block;
   font-family: var(--body-font);
   font-weight: var(--font-medium2);
-  font-size: var(--smaller-font-size);
+  font-size: var(--small-font-size);
   margin-bottom: var(--mb-0-5);
 }
 
@@ -799,7 +800,7 @@ img {
 
 .qualification__calendar,
 .qualification__calendar2 {
-  font-size: var(--smaller-font-size);
+  font-size: var(--small-font-size);
   color: var(--text-color-light);
 }
 
@@ -959,7 +960,7 @@ img {
   display: flex;
   justify-self: center;
   align-items: center;
-  width: 725px;
+  width: 750px;
   height: 350px;
   border-radius: 25px;
   box-shadow: 0 0 2px var(--first-color);
@@ -1321,7 +1322,7 @@ img {
   }
 
   .about__img {
-    width: 300px;
+    width: 350px;
   }
 
   .about__img-container {
@@ -1382,14 +1383,14 @@ img {
   }
 
   .about__img {
-    width: 350px; /* Atur lebar gambar */
+    width: 400px; /* Atur lebar gambar */
     display: block; /* Pastikan gambar diatur sebagai blok */
     margin: auto; /* Mengatur margin auto secara vertikal dan horizontal */
 }
 
 .about__img-container {
-    width: 250px; /* Atur lebar container */
-    height: 200px; /* Atur tinggi container */
+    width: 350px; /* Atur lebar container */
+    height: 250px; /* Atur tinggi container */
     display: flex; /* Menggunakan Flexbox */
     justify-content: center; /* Menengahkan secara horizontal */
     align-items: center; /* Menengahkan secara vertikal */
@@ -1646,7 +1647,7 @@ img {
     grid-template-columns: repeat(2, 1fr);
   }
   .about__img {
-    width: 500px;
+    width: 550px;
   }
 }
 
