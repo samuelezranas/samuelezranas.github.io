@@ -35,7 +35,6 @@ function startAutoScroll() {
 
 startAutoScroll();
 
-
 const skillsHeaders = document.querySelectorAll('.skills__header');
 
 skillsHeaders.forEach(header => {
