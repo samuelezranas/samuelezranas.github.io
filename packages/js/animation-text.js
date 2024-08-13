@@ -1,5 +1,5 @@
 const textElement = document.getElementById('text-container');
-const textsToType = ['Web Developer', 'Graphic Designer', 'Photographer'];
+const textsToType = ['Web Developer', 'Android Developer', 'UI/UX Designer', 'Graphic Designer', 'Photographer'];
 let textIndex = 0;
 const cursorElement = document.createElement('span');
 cursorElement.className = 'blinking-cursor';
@@ -8,9 +8,10 @@ textElement.appendChild(cursorElement);
 function typeAndEraseText() {
     let index = 0;
     let isTyping = true;
-    let currentText = textsToType[textIndex];
+    let currentText = '';
     let startTime = null;
     const typingSpeed = 1200; // Kecepatan mengetik (dalam milidetik) untuk 50 wpm
+    const pauseDuration = 1000; // Jeda setelah selesai mengetik atau menghapus (dalam milidetik)
 
     function animateText(timestamp) {
         if (!startTime) {
@@ -19,37 +20,36 @@ function typeAndEraseText() {
         const elapsedTime = timestamp - startTime;
 
         if (isTyping) {
-            index = Math.floor((elapsedTime / typingSpeed) * currentText.length);
-            if (index >= currentText.length) {
-                index = currentText.length;
+            index = Math.floor((elapsedTime / typingSpeed) * textsToType[textIndex].length);
+            if (index >= textsToType[textIndex].length) {
+                index = textsToType[textIndex].length;
                 isTyping = false;
-                startTime = null;
+                startTime = timestamp; // Waktu mulai jeda sebelum menghapus
                 setTimeout(() => {
                     isTyping = false;
                     requestAnimationFrame(animateText);
-                }, 2000); // Jeda setelah selesai mengetik
+                }, pauseDuration); // Jeda selesai mengetik sebelum menghapus
             }
         } else {
-            index = currentText.length - Math.floor((elapsedTime / typingSpeed) * currentText.length);
+            index = textsToType[textIndex].length - Math.floor((elapsedTime / typingSpeed) * textsToType[textIndex].length);
             if (index <= 0) {
                 index = 0;
                 isTyping = true;
                 startTime = null;
                 textIndex = (textIndex + 1) % textsToType.length;
-                currentText = textsToType[textIndex]; // Memperbarui teks yang akan diketik
+                currentText = ''; // Mengosongkan teks
                 setTimeout(() => {
                     isTyping = true;
                     requestAnimationFrame(animateText);
-                }, 2000); // Jeda setelah selesai menghapus
+                }, pauseDuration); // Jeda selesai menghapus sebelum memulai mengetik kembali
             }
         }
 
-        textElement.textContent = currentText.slice(0, index);
+        currentText = textsToType[textIndex].slice(0, index);
+        textElement.textContent = currentText;
         cursorElement.style.left = `${textElement.offsetWidth}px`;
 
-        if (isTyping || index > 0) {
-            requestAnimationFrame(animateText);
-        }
+        requestAnimationFrame(animateText);
     }
 
     requestAnimationFrame(animateText);

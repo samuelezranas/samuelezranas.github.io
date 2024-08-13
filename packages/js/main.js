@@ -138,6 +138,22 @@ modalCloses.forEach((modalClose) => {
   });
 });
 
+function showCategory(category) {
+  var items = document.querySelectorAll('.work-list .work');
+  items.forEach(function(item) {
+      if (category === 'all') {
+          item.style.display = 'block';
+      } else {
+          if (item.classList.contains(category)) {
+              item.style.display = 'block';
+          } else {
+              item.style.display = 'none';
+          }
+      }
+  });
+}
+
+
 /*==================== portofolio SWIPER  ====================*/
 let swiperportofolio = new Swiper(".portofolio__container", {
   cssMode: true,
