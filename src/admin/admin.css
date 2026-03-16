@@ -1,0 +1,212 @@
+.admin-shell {
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, #2f1848 0%, transparent 35%),
+    radial-gradient(circle at 85% 8%, #4d173a 0%, transparent 30%),
+    linear-gradient(180deg, #0b0414, #120713);
+  color: #f6efff;
+  padding: 1.2rem;
+  font-family: "Rajdhani", sans-serif;
+}
+
+.admin-wrap {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  border: 1px solid rgba(233, 132, 255, 0.3);
+  border-radius: 20px;
+  background: rgba(23, 10, 35, 0.75);
+  padding: 1rem;
+}
+
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.admin-topbar h1 {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(1.15rem, 3.6vw, 1.8rem);
+}
+
+.admin-topbar a {
+  border: 1px solid rgba(255, 183, 229, 0.45);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  text-decoration: none;
+  background: rgba(48, 14, 58, 0.76);
+}
+
+.admin-topbar-actions {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.admin-logout-btn {
+  border: 1px solid rgba(255, 183, 229, 0.45);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  background: rgba(48, 14, 58, 0.76);
+  color: #f6efff;
+}
+
+.admin-login-wrap {
+  width: min(420px, 100%);
+  margin: 10vh auto 0;
+  border: 1px solid rgba(233, 132, 255, 0.3);
+  border-radius: 20px;
+  background: rgba(23, 10, 35, 0.75);
+  padding: 1rem;
+}
+
+.admin-login-wrap h1 {
+  margin: 0 0 0.35rem;
+  font-family: "Orbitron", sans-serif;
+}
+
+.admin-login-wrap p {
+  margin: 0 0 0.8rem;
+  color: #d7c3e2;
+}
+
+.admin-back-link {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  border: 1px solid rgba(255, 183, 229, 0.45);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  text-decoration: none;
+  background: rgba(48, 14, 58, 0.76);
+  color: #f6efff;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.admin-tabs button {
+  border: 1px solid rgba(255, 159, 223, 0.4);
+  border-radius: 999px;
+  background: rgba(43, 13, 44, 0.72);
+  color: #f6efff;
+  padding: 0.38rem 0.75rem;
+}
+
+.admin-tabs button.active {
+  background: linear-gradient(90deg, rgba(180, 77, 255, 0.3), rgba(255, 53, 104, 0.24));
+}
+
+.admin-card {
+  border: 1px solid rgba(255, 159, 223, 0.26);
+  border-radius: 14px;
+  background: rgba(34, 12, 43, 0.64);
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-card h3 {
+  margin: 0 0 0.5rem;
+}
+
+.admin-form {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+  border: 1px solid rgba(255, 167, 225, 0.38);
+  border-radius: 10px;
+  background: rgba(43, 13, 56, 0.82);
+  color: #f6efff;
+  padding: 0.55rem 0.65rem;
+  font-family: inherit;
+}
+
+.admin-form textarea {
+  min-height: 90px;
+}
+
+.admin-form button,
+.admin-action-btn {
+  border: 1px solid rgba(255, 188, 231, 0.55);
+  border-radius: 10px;
+  background: linear-gradient(110deg, rgba(255, 81, 174, 0.42), rgba(133, 89, 255, 0.35));
+  color: #fff2fb;
+  padding: 0.5rem 0.8rem;
+}
+
+.admin-inline-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.admin-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.admin-list-item {
+  border: 1px solid rgba(255, 164, 226, 0.28);
+  border-radius: 12px;
+  background: rgba(39, 13, 50, 0.72);
+  padding: 0.55rem;
+}
+
+.admin-list-item p {
+  margin: 0.2rem 0;
+}
+
+.admin-alert {
+  border: 1px solid rgba(255, 196, 234, 0.46);
+  border-radius: 12px;
+  padding: 0.65rem;
+  margin-bottom: 0.8rem;
+  background: rgba(53, 18, 62, 0.72);
+}
+
+.admin-metric-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-metric {
+  border: 1px solid rgba(255, 164, 226, 0.28);
+  border-radius: 12px;
+  background: rgba(39, 13, 50, 0.72);
+  padding: 0.7rem;
+}
+
+.admin-metric h4,
+.admin-metric p {
+  margin: 0;
+}
+
+.admin-metric p {
+  margin-top: 0.3rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+@media (max-width: 880px) {
+  .admin-grid,
+  .admin-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiArrowLeft,
   FiArrowRight,
@@ -52,6 +52,8 @@ import {
   SiVuedotjs,
 } from "react-icons/si";
 import Antigravity from "./components/Antigravity";
+import { fetchPublicWebsiteData } from "./lib/siteApi";
+import { isSupabaseConfigured } from "./lib/supabaseClient";
 
 const HOME_TRANSLATIONS = [
   "Hello, World!",
@@ -66,6 +68,105 @@ const HOME_TRANSLATIONS = [
 
 const ENCRYPT_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/\\[]{}@#$%&*";
 const RESUME_URL = "https://drive.google.com/";
+const CERTIFICATIONS_PER_PAGE = 6;
+const ABOUT_TITLE = "I\'m Samuel Ezra. Here, I craft digital products with a futuristic mindset.";
+const ABOUT_LEAD =
+  "I am an Information Technology undergraduate focused on software engineering, interface design, and visual storytelling. I enjoy building products that are both technically strong and visually memorable. Beyond coding, I care deeply about user flow, visual rhythm, and performance, so every project I build aims to feel smooth, purposeful, and ready for real-world use.";
+const DEFAULT_ABOUT_PHOTOS = [{ id: "about-default", image: "/packages/images/2869.jpg" }];
+
+const defaultContactLinks = [
+  {
+    id: "contact-mail",
+    platform: "mail",
+    label: "samuelezra2013@gmail.com",
+    url: "mailto:samuelezra2013@gmail.com",
+  },
+  {
+    id: "contact-linkedin",
+    platform: "linkedin",
+    label: "linkedin.com/in/samuel-ezra-sirait",
+    url: "https://www.linkedin.com/in/samuel-ezra-sirait/",
+  },
+  {
+    id: "contact-github",
+    platform: "github",
+    label: "github.com/samuelezranas",
+    url: "https://github.com/samuelezranas",
+  },
+  {
+    id: "contact-instagram",
+    platform: "instagram",
+    label: "instagram.com/samuelezra34",
+    url: "https://www.instagram.com/samuelezra34/",
+  },
+];
+
+const certificationsData = [
+  {
+    id: "cert-1",
+    title: "Belajar Dasar Structured Query Language (SQL)",
+    issuer: "Dicoding",
+    year: "2024",
+    image: "/packages/images/porto-carslification.png",
+    credentialUrl: "https://www.dicoding.com/certificates/KEXLYN56YZG2",
+  },
+  {
+    id: "cert-2",
+    title: "Belajar Dasar Data Science",
+    issuer: "Dicoding",
+    year: "2024",
+    image: "/packages/images/porto-mandiri-news.png",
+    credentialUrl: "",
+  },
+  {
+    id: "cert-3",
+    title: "Memulai Pemrograman Dengan Python",
+    issuer: "Dicoding",
+    year: "2024",
+    image: "/packages/images/porto-teman-pasar.jpg",
+    credentialUrl: "",
+  },
+  {
+    id: "cert-4",
+    title: "Cloud Practitioner Essentials",
+    issuer: "AWS Academy",
+    year: "2023",
+    image: "/packages/images/porto-redesign.png",
+    credentialUrl: "",
+  },
+  {
+    id: "cert-5",
+    title: "Fundamental Front-End Web",
+    issuer: "Dicoding",
+    year: "2023",
+    image: "/packages/images/cronus-index.png",
+    credentialUrl: "",
+  },
+  {
+    id: "cert-6",
+    title: "Responsive Web Design",
+    issuer: "freeCodeCamp",
+    year: "2023",
+    image: "/packages/images/porto-graphic-design.png",
+    credentialUrl: "",
+  },
+  {
+    id: "cert-7",
+    title: "Machine Learning Basics",
+    issuer: "Google Cloud Skills Boost",
+    year: "2023",
+    image: "/packages/images/porto-cadmus.jpg",
+    credentialUrl: "",
+  },
+  {
+    id: "cert-8",
+    title: "UI Design Essentials",
+    issuer: "Coursera",
+    year: "2022",
+    image: "/packages/images/porto-desain-stiker.png",
+    credentialUrl: "",
+  },
+];
 
 const portfolioData = {
   Website: [
@@ -218,7 +319,20 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Website");
   const [activeProject, setActiveProject] = useState(null);
-  const [isHomeActive, setIsHomeActive] = useState(true);
+  const [aboutContent, setAboutContent] = useState({
+    title: ABOUT_TITLE,
+    lead: ABOUT_LEAD,
+    resumeUrl: RESUME_URL,
+    photos: DEFAULT_ABOUT_PHOTOS,
+  });
+  const [dynamicCertifications, setDynamicCertifications] = useState(certificationsData);
+  const [dynamicPortfolioData, setDynamicPortfolioData] = useState(portfolioData);
+  const [dynamicPortfolioLinks, setDynamicPortfolioLinks] = useState(portfolioLinks);
+  const [dynamicContacts, setDynamicContacts] = useState(defaultContactLinks);
+  const [certificationPage, setCertificationPage] = useState(0);
+  const [activeCertification, setActiveCertification] = useState(null);
+  const [aboutPhotoIndex, setAboutPhotoIndex] = useState(0);
+  const [isAboutActive, setIsAboutActive] = useState(false);
   const [encryptedHeroText, setEncryptedHeroText] = useState(HOME_TRANSLATIONS[0]);
   const encryptedIndexRef = useRef(0);
   const scrambleFrameRef = useRef(0);
@@ -228,6 +342,8 @@ export default function App() {
   const snapTimeoutRef = useRef(0);
   const snapSettleTimeoutRef = useRef(0);
   const touchStartYRef = useRef(null);
+  const aboutTouchStartXRef = useRef(null);
+  const footerVideoRefs = useRef(new Map());
 
   const smoothSnapToSection = (targetSection) => {
     if (!targetSection) {
@@ -304,21 +420,43 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const homeSection = homeSectionRef.current;
-    if (!homeSection) {
+    if (!activeCertification) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onEscape = (event) => {
+      if (event.key === "Escape") {
+        setActiveCertification(null);
+      }
+    };
+
+    window.addEventListener("keydown", onEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onEscape);
+    };
+  }, [activeCertification]);
+
+  useEffect(() => {
+    const aboutSection = aboutSectionRef.current;
+    if (!aboutSection) {
       return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsHomeActive(entry.isIntersecting && entry.intersectionRatio >= 0.55);
+        setIsAboutActive(entry.isIntersecting && entry.intersectionRatio >= 0.45);
       },
       {
-        threshold: [0.35, 0.55, 0.75],
+        threshold: [0.25, 0.45, 0.65],
       }
     );
 
-    observer.observe(homeSection);
+    observer.observe(aboutSection);
 
     return () => {
       observer.disconnect();
@@ -326,19 +464,49 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const homeSection = homeSectionRef.current;
-    const aboutSection = aboutSectionRef.current;
-    if (!homeSection || !aboutSection) {
-      return;
-    }
+    const isPhoneViewport = () => window.matchMedia("(max-width: 600px)").matches;
 
-    const triggerSnap = (targetSection) => {
-      smoothSnapToSection(targetSection);
+    const getSnapTargets = () =>
+      Array.from(document.querySelectorAll(".section-page, .site-footer"));
+
+    const getCurrentSectionIndex = (targets) => {
+      if (!targets.length) {
+        return -1;
+      }
+
+      const scrollY = window.scrollY;
+      return targets.reduce((closestIndex, target, index) => {
+        const closestDistance = Math.abs(targets[closestIndex].offsetTop - scrollY);
+        const currentDistance = Math.abs(target.offsetTop - scrollY);
+        return currentDistance < closestDistance ? index : closestIndex;
+      }, 0);
     };
 
-    const handleDirectionalSnap = (deltaY, event) => {
-      if (Math.abs(deltaY) < 8) {
-        return;
+    const goToAdjacentSection = (deltaY) => {
+      const targets = getSnapTargets();
+      if (!targets.length) {
+        return false;
+      }
+
+      const currentIndex = getCurrentSectionIndex(targets);
+      if (currentIndex < 0) {
+        return false;
+      }
+
+      const nextIndex = deltaY > 0 ? currentIndex + 1 : currentIndex - 1;
+      if (nextIndex < 0 || nextIndex >= targets.length) {
+        return false;
+      }
+
+      smoothSnapToSection(targets[nextIndex]);
+      return true;
+    };
+
+    const snapBetweenHomeAndAboutOnPhone = (deltaY) => {
+      const homeSection = homeSectionRef.current;
+      const aboutSection = aboutSectionRef.current;
+      if (!homeSection || !aboutSection) {
+        return false;
       }
 
       const aboutTop = aboutSection.offsetTop;
@@ -347,21 +515,43 @@ export default function App() {
       const inAboutTopZone =
         scrollY >= aboutTop - 8 && scrollY < aboutTop + window.innerHeight * 0.58;
 
+      if (deltaY > 0 && inHomeZone) {
+        smoothSnapToSection(aboutSection);
+        return true;
+      }
+
+      if (deltaY < 0 && inAboutTopZone) {
+        smoothSnapToSection(homeSection);
+        return true;
+      }
+
+      return false;
+    };
+
+    if (!getSnapTargets().length) {
+      return;
+    }
+
+    const handleDirectionalSnap = (deltaY, event) => {
+      if (Math.abs(deltaY) < 8) {
+        return;
+      }
+
       if (scrollSnapLockedRef.current) {
         event.preventDefault();
         return;
       }
 
-      if (deltaY > 0 && inHomeZone) {
-        event.preventDefault();
-        triggerSnap(aboutSection);
+      if (isPhoneViewport()) {
+        const didSnap = snapBetweenHomeAndAboutOnPhone(deltaY);
+        if (didSnap) {
+          event.preventDefault();
+        }
         return;
       }
 
-      if (deltaY < 0 && inAboutTopZone) {
-        event.preventDefault();
-        triggerSnap(homeSection);
-      }
+      event.preventDefault();
+      goToAdjacentSection(deltaY);
     };
 
     const onWheel = (event) => {
@@ -400,6 +590,126 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const videos = Array.from(footerVideoRefs.current.values());
+    videos.forEach((video) => {
+      video.preload = "auto";
+      video.load();
+    });
+
+    return () => {
+      footerVideoRefs.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadWebsiteData = async () => {
+      try {
+        const data = await fetchPublicWebsiteData();
+        if (!isMounted || !data) {
+          return;
+        }
+
+        if (data.about) {
+          setAboutContent((previous) => ({
+            ...previous,
+            title: data.about.title || previous.title,
+            lead: data.about.lead || previous.lead,
+            resumeUrl: data.about.resumeUrl || previous.resumeUrl,
+            photos: data.about.photos?.length ? data.about.photos : previous.photos,
+          }));
+        }
+
+        if (Array.isArray(data.certifications) && data.certifications.length > 0) {
+          setDynamicCertifications(data.certifications);
+        }
+
+        if (data.portfolioData && Object.keys(data.portfolioData).length > 0) {
+          setDynamicPortfolioData(data.portfolioData);
+        }
+
+        if (data.portfolioLinks && Object.keys(data.portfolioLinks).length > 0) {
+          setDynamicPortfolioLinks(data.portfolioLinks);
+        }
+
+        if (Array.isArray(data.contacts) && data.contacts.length > 0) {
+          setDynamicContacts(data.contacts);
+        }
+      } catch (error) {
+        console.error("Failed to load Supabase website data:", error);
+      }
+    };
+
+    loadWebsiteData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const aboutPhotos = aboutContent.photos?.length ? aboutContent.photos : DEFAULT_ABOUT_PHOTOS;
+
+  useEffect(() => {
+    if (aboutPhotoIndex >= aboutPhotos.length) {
+      setAboutPhotoIndex(0);
+    }
+  }, [aboutPhotoIndex, aboutPhotos.length]);
+
+  useEffect(() => {
+    if (aboutPhotos.length <= 1) {
+      return undefined;
+    }
+
+    const rotation = window.setInterval(() => {
+      setAboutPhotoIndex((previous) => (previous + 1) % aboutPhotos.length);
+    }, 4500);
+
+    return () => {
+      window.clearInterval(rotation);
+    };
+  }, [aboutPhotos.length]);
+
+  const showPreviousAboutPhoto = () => {
+    setAboutPhotoIndex((previous) =>
+      previous === 0 ? aboutPhotos.length - 1 : previous - 1
+    );
+  };
+
+  const showNextAboutPhoto = () => {
+    setAboutPhotoIndex((previous) => (previous + 1) % aboutPhotos.length);
+  };
+
+  const handleAboutTouchStart = (event) => {
+    aboutTouchStartXRef.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleAboutTouchEnd = (event) => {
+    if (aboutTouchStartXRef.current === null || aboutPhotos.length <= 1) {
+      return;
+    }
+
+    const endX = event.changedTouches[0]?.clientX ?? aboutTouchStartXRef.current;
+    const deltaX = aboutTouchStartXRef.current - endX;
+    aboutTouchStartXRef.current = null;
+
+    if (Math.abs(deltaX) < 28) {
+      return;
+    }
+
+    if (deltaX > 0) {
+      showNextAboutPhoto();
+      return;
+    }
+
+    showPreviousAboutPhoto();
+  };
+
   const handleExploreClick = (event) => {
     event.preventDefault();
     smoothSnapToSection(aboutSectionRef.current);
@@ -410,9 +720,51 @@ export default function App() {
     setActiveProject(null);
   };
 
-  const currentProjects = portfolioData[activeCategory] || [];
+  const portfolioCategories = useMemo(
+    () => [...new Set([...Object.keys(dynamicPortfolioData), ...Object.keys(dynamicPortfolioLinks)])],
+    [dynamicPortfolioData, dynamicPortfolioLinks]
+  );
+
+  useEffect(() => {
+    if (!portfolioCategories.length) {
+      return;
+    }
+
+    if (!portfolioCategories.includes(activeCategory)) {
+      setActiveCategory(portfolioCategories[0]);
+      setActiveProject(null);
+    }
+  }, [activeCategory, portfolioCategories]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(dynamicCertifications.length / CERTIFICATIONS_PER_PAGE));
+    if (certificationPage >= totalPages) {
+      setCertificationPage(0);
+    }
+  }, [certificationPage, dynamicCertifications.length]);
+
+  const currentProjects = dynamicPortfolioData[activeCategory] || [];
+  const certificationPageCount = Math.max(
+    1,
+    Math.ceil(dynamicCertifications.length / CERTIFICATIONS_PER_PAGE)
+  );
+  const certificationPageItems = dynamicCertifications.slice(
+    certificationPage * CERTIFICATIONS_PER_PAGE,
+    (certificationPage + 1) * CERTIFICATIONS_PER_PAGE
+  );
+  const certificationsInView = Array.from({ length: CERTIFICATIONS_PER_PAGE }, (_, index) => {
+    const certification = certificationPageItems[index];
+    if (certification) {
+      return certification;
+    }
+
+    return {
+      id: `cert-placeholder-${certificationPage}-${index}`,
+      isPlaceholder: true,
+    };
+  });
   const detailProjectSequence = ["Website", "Application"].flatMap((category) =>
-    (portfolioData[category] || []).map((project) => ({ category, project }))
+    (dynamicPortfolioData[category] || []).map((project) => ({ category, project }))
   );
   const activeProjectIndex = activeProject
     ? detailProjectSequence.findIndex((item) => item.project.title === activeProject.title)
@@ -432,12 +784,26 @@ export default function App() {
     setActiveProject(target.project);
   };
 
-  const handleFooterIconEnter = (event) => {
+  const pauseOtherFooterVideos = (activeName) => {
+    footerVideoRefs.current.forEach((video, name) => {
+      if (!video || name === activeName) {
+        return;
+      }
+
+      video.pause();
+      video.currentTime = 0;
+    });
+  };
+
+  const handleFooterIconEnter = (event, iconName) => {
     const video = event.currentTarget.querySelector("video");
     if (!video) {
       return;
     }
 
+    pauseOtherFooterVideos(iconName);
+    video.preload = "auto";
+    video.loop = true;
     video.play().catch(() => {});
   };
 
@@ -451,13 +817,40 @@ export default function App() {
     video.currentTime = 0;
   };
 
+  const registerFooterVideoRef = (name, node) => {
+    if (!node) {
+      footerVideoRefs.current.delete(name);
+      return;
+    }
+
+    footerVideoRefs.current.set(name, node);
+  };
+
+  const resolveContactIcon = (platform = "") => {
+    const normalized = platform.toLowerCase();
+    if (normalized.includes("mail")) {
+      return FiMail;
+    }
+    if (normalized.includes("linkedin")) {
+      return FiLinkedin;
+    }
+    if (normalized.includes("github")) {
+      return FiGithub;
+    }
+    if (normalized.includes("instagram")) {
+      return FiInstagram;
+    }
+
+    return FiExternalLink;
+  };
+
   return (
-    <div className={`app-shell ${isHomeActive ? "home-active" : ""}`}>
+    <div className={`app-shell ${isAboutActive ? "about-active" : ""}`}>
       <div className="space-layer stars-near" />
       <div className="space-layer stars-mid" />
       <div className="space-layer stars-far" />
 
-      <header className={`topbar ${isHomeActive ? "topbar-hidden" : "topbar-visible"}`}>
+      <header className={`topbar ${isAboutActive ? "topbar-visible" : "topbar-hidden"}`}>
         <p className="brand">
           <PiPlanetBold /> Samuel Ezra
         </p>
@@ -469,8 +862,9 @@ export default function App() {
         </button>
         <nav className={isMenuOpen ? "open" : ""}>
           <a href="#home">Home</a>
-          <a href="#about">About Me</a>
-          <a href="#skills">Tech Skill</a>
+          <a href="#about">About</a>
+          <a href="#skills">Skill</a>
+          <a href="#certification">Certification</a>
           <a href="#portfolio">Portfolio</a>
           <a href="#contact">Contact</a>
         </nav>
@@ -512,27 +906,49 @@ export default function App() {
               <p className="eyebrow">
                 <HiOutlineSparkles /> About me
               </p>
-              <h1 className="animated-subtitle">
-                I&apos;m Samuel Ezra.
-                <br />
-                <span> Here, I craft digital products with a futuristic mindset.</span>
-              </h1>
-              <p className="lead">
-                I am an Information Technology undergraduate focused on software engineering,
-                interface design, and visual storytelling. I enjoy building products that are
-                both technically strong and visually memorable. Beyond coding, I care deeply
-                about user flow, visual rhythm, and performance, so every project I build aims
-                to feel smooth, purposeful, and ready for real-world use.
-              </p>
+              <h1 className="animated-subtitle about-title-dynamic">{aboutContent.title}</h1>
+              <p className="lead">{aboutContent.lead}</p>
               <div className="quick-links">
-                <a href={RESUME_URL} target="_blank" rel="noreferrer" className="resume-cta">
+                <a
+                  href={aboutContent.resumeUrl || RESUME_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="resume-cta"
+                >
                   <FiFileText /> CV / Resume
                 </a>
               </div>
             </div>
 
-            <div className="portrait-wrap">
-              <img src="/packages/images/2869.jpg" alt="Portrait of Samuel Ezra" />
+            <div
+              className="about-photo-stack"
+              onTouchStart={handleAboutTouchStart}
+              onTouchEnd={handleAboutTouchEnd}
+            >
+              <div className="about-photo-stage">
+                {aboutPhotos.slice(0, 3).map((_, layerIndex) => {
+                  const photo = aboutPhotos[(aboutPhotoIndex + layerIndex) % aboutPhotos.length];
+                  return (
+                    <figure
+                      key={`${photo.id}-${layerIndex}`}
+                      className={`about-photo-layer layer-${layerIndex}`}
+                    >
+                      <img src={photo.image} alt={`About visual ${layerIndex + 1}`} />
+                    </figure>
+                  );
+                })}
+              </div>
+
+              {aboutPhotos.length > 1 && (
+                <div className="about-photo-controls">
+                  <button type="button" onClick={showPreviousAboutPhoto} aria-label="Previous photo">
+                    <FiArrowLeft />
+                  </button>
+                  <button type="button" onClick={showNextAboutPhoto} aria-label="Next photo">
+                    <FiArrowRight />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -575,6 +991,106 @@ export default function App() {
           </div>
         </section>
 
+        <section id="certification" className="section-page">
+          <div className="section-panel certification-panel">
+            <h2 className="animated-subtitle">Certification</h2>
+            <p className="section-desc">
+              Selected certificates from my learning track. Hover for motion details and click to open full preview.
+            </p>
+
+            <div className="certification-grid" key={`cert-page-${certificationPage}`}>
+              {certificationsInView.map((certification) => (
+                <article
+                  key={certification.id}
+                  className={`cert-card ${certification.isPlaceholder ? "placeholder" : ""}`}
+                  onClick={() => {
+                    if (!certification.isPlaceholder) {
+                      setActiveCertification(certification);
+                    }
+                  }}
+                  role={certification.isPlaceholder ? undefined : "button"}
+                  tabIndex={certification.isPlaceholder ? -1 : 0}
+                  onKeyDown={(event) => {
+                    if (certification.isPlaceholder) {
+                      return;
+                    }
+
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setActiveCertification(certification);
+                    }
+                  }}
+                >
+                  {certification.isPlaceholder ? (
+                    <>
+                      <div className="cert-thumb-wrap cert-skeleton-block">
+                        <div className="cert-thumb" aria-hidden="true" />
+                        <span className="cert-thumb-hover-label" aria-hidden="true">Not Yet</span>
+                      </div>
+                      <div className="cert-title-slot" aria-hidden="true">
+                        <div className="cert-skeleton-title" />
+                        <p className="cert-placeholder-title">No Certificate Detected</p>
+                      </div>
+                      <div className="cert-skeleton-line" aria-hidden="true" />
+                      <div className="cert-year-slot" aria-hidden="true">
+                        <span className="cert-skeleton-pill" />
+                        <span className="cert-skeleton-year">20XX</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="cert-thumb-wrap">
+                        <img src={certification.image} alt={certification.title} className="cert-thumb" />
+                      </div>
+                      <h4>{certification.title}</h4>
+                      <p>{certification.issuer}</p>
+                      <span>{certification.year}</span>
+                    </>
+                  )}
+                </article>
+              ))}
+            </div>
+
+            {certificationPageCount > 1 && (
+              <div className="cert-pagination">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCertificationPage((prev) =>
+                      prev === 0 ? certificationPageCount - 1 : prev - 1
+                    )
+                  }
+                  aria-label="Previous certification page"
+                >
+                  <FiArrowLeft />
+                </button>
+                <div className="cert-dots" aria-label="Certification pages">
+                  {Array.from({ length: certificationPageCount }, (_, index) => (
+                    <button
+                      key={`cert-page-dot-${index}`}
+                      type="button"
+                      className={index === certificationPage ? "active" : ""}
+                      onClick={() => setCertificationPage(index)}
+                      aria-label={`Go to certification page ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCertificationPage((prev) =>
+                      prev === certificationPageCount - 1 ? 0 : prev + 1
+                    )
+                  }
+                  aria-label="Next certification page"
+                >
+                  <FiArrowRight />
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+
         <section id="portfolio" className="section-page">
           <div className="section-panel">
             <h2 className="animated-subtitle">Portfolio</h2>
@@ -583,17 +1099,36 @@ export default function App() {
             </p>
 
             {!activeProject && (
-              <div className="portfolio-tabs">
-                {["Website", "Application", "Design", "Photography"].map((category) => (
-                  <button
-                    key={category}
-                    className={activeCategory === category ? "active" : ""}
-                    onClick={() => handleCategoryChange(category)}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
+              <>
+                <div className="portfolio-mobile-filter">
+                  <label htmlFor="portfolio-category-select">Category</label>
+                  <div className="portfolio-mobile-select-wrap">
+                    <select
+                      id="portfolio-category-select"
+                      value={activeCategory}
+                      onChange={(event) => handleCategoryChange(event.target.value)}
+                    >
+                      {portfolioCategories.map((category) => (
+                        <option key={`portfolio-option-${category}`} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="portfolio-tabs">
+                  {portfolioCategories.map((category) => (
+                    <button
+                      key={category}
+                      className={activeCategory === category ? "active" : ""}
+                      onClick={() => handleCategoryChange(category)}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
 
             {(activeCategory === "Website" || activeCategory === "Application") && !activeProject && (
@@ -703,7 +1238,7 @@ export default function App() {
                 <p>
                   Open the dedicated {activeCategory.toLowerCase()} portfolio page for the full collection.
                 </p>
-                <a href={portfolioLinks[activeCategory]} target="_blank" rel="noreferrer">
+                <a href={dynamicPortfolioLinks[activeCategory]} target="_blank" rel="noreferrer">
                   Go to {activeCategory} Portfolio <FiExternalLink />
                 </a>
               </article>
@@ -718,21 +1253,67 @@ export default function App() {
               Have a project idea, collaboration opportunity, or just want to connect? Let&apos;s talk.
             </p>
             <div className="contact-grid">
-              <a href="mailto:samuelezra2013@gmail.com">
-                <FiMail /> samuelezra2013@gmail.com
-              </a>
-              <a href="https://www.linkedin.com/in/samuel-ezra-sirait/" target="_blank" rel="noreferrer">
-                <FiLinkedin /> linkedin.com/in/samuel-ezra-sirait
-              </a>
-              <a href="https://github.com/samuelezranas" target="_blank" rel="noreferrer">
-                <FiGithub /> github.com/samuelezranas
-              </a>
-              <a href="https://www.instagram.com/samuelezra34/" target="_blank" rel="noreferrer">
-                <FiInstagram /> instagram.com/samuelezra34
-              </a>
+              {dynamicContacts.map((contact) => {
+                const ContactIcon = resolveContactIcon(contact.platform);
+                const href = contact.url || "#";
+                const isMail = href.startsWith("mailto:");
+
+                return (
+                  <a
+                    key={contact.id || `${contact.platform}-${contact.label}`}
+                    href={href}
+                    target={isMail ? undefined : "_blank"}
+                    rel={isMail ? undefined : "noreferrer"}
+                  >
+                    <ContactIcon /> {contact.label}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>
+
+        {activeCertification && (
+          <div
+            className="cert-modal-overlay"
+            role="presentation"
+            onClick={() => setActiveCertification(null)}
+          >
+            <article
+              className="cert-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label={activeCertification.title}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="cert-modal-close"
+                onClick={() => setActiveCertification(null)}
+                aria-label="Close certification detail"
+              >
+                <FiX />
+              </button>
+
+              <img src={activeCertification.image} alt={activeCertification.title} />
+              <h3>{activeCertification.title}</h3>
+              <p>
+                {activeCertification.issuer} · {activeCertification.year}
+              </p>
+
+              {activeCertification.credentialUrl && (
+                <a
+                  href={activeCertification.credentialUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="cert-link-btn"
+                >
+                  Open Credential <FiExternalLink />
+                </a>
+              )}
+            </article>
+          </div>
+        )}
 
         <footer className="site-footer">
           <h3>"Keep Moving Forward!"</h3>
@@ -747,18 +1328,19 @@ export default function App() {
                 rel="noreferrer"
                 aria-label={item.name}
                 title={item.name}
-                onMouseEnter={handleFooterIconEnter}
+                onMouseEnter={(event) => handleFooterIconEnter(event, item.name)}
                 onMouseLeave={handleFooterIconLeave}
-                onFocus={handleFooterIconEnter}
+                onFocus={(event) => handleFooterIconEnter(event, item.name)}
                 onBlur={handleFooterIconLeave}
               >
                 <video
+                  ref={(node) => registerFooterVideoRef(item.name, node)}
                   className="footer-lottie"
                   src={item.previewUrl}
                   loop
                   muted
                   playsInline
-                  preload="metadata"
+                  preload="auto"
                 />
               </a>
             ))}
