@@ -60,12 +60,21 @@ create table if not exists contact_links (
   created_at timestamptz not null default now()
 );
 
+create table if not exists contact_message (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  message text not null,
+  created_at timestamptz not null default now()
+);
+
 alter table about_settings enable row level security;
 alter table about_photos enable row level security;
 alter table certifications enable row level security;
 alter table portfolio_categories enable row level security;
 alter table portfolio_projects enable row level security;
 alter table contact_links enable row level security;
+alter table contact_message enable row level security;
 
 drop policy if exists "public read about settings" on about_settings;
 drop policy if exists "public read about photos" on about_photos;
@@ -73,6 +82,8 @@ drop policy if exists "public read certifications" on certifications;
 drop policy if exists "public read categories" on portfolio_categories;
 drop policy if exists "public read projects" on portfolio_projects;
 drop policy if exists "public read contacts" on contact_links;
+drop policy if exists "public insert contact message" on contact_message;
+drop policy if exists "dev read contact message" on contact_message;
 
 drop policy if exists "dev write about settings" on about_settings;
 drop policy if exists "dev write about photos" on about_photos;
@@ -104,6 +115,16 @@ using (is_active = true);
 create policy "public read contacts" on contact_links
 for select
 using (is_active = true);
+
+create policy "public insert contact message" on contact_message
+for insert
+to anon, authenticated
+with check (true);
+
+create policy "dev read contact message" on contact_message
+for select
+to anon, authenticated
+using (true);
 
 -- Temporary development policy so AdminPage (browser + anon key) can write data.
 -- IMPORTANT: tighten this in production by using Supabase Auth roles.

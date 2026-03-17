@@ -149,7 +149,7 @@ export async function fetchPublicWebsiteData() {
 export async function fetchAdminWebsiteData() {
   const client = ensureSupabase();
 
-  const [aboutSettingsRes, aboutPhotosRes, certificationsRes, categoriesRes, projectsRes, contactsRes] =
+  const [aboutSettingsRes, aboutPhotosRes, certificationsRes, categoriesRes, projectsRes, contactsRes, contactMessagesRes] =
     await Promise.all([
       client.from("about_settings").select("*").limit(1).maybeSingle(),
       client.from("about_photos").select("*").order("sort_order", { ascending: true }),
@@ -157,6 +157,7 @@ export async function fetchAdminWebsiteData() {
       client.from("portfolio_categories").select("*").order("sort_order", { ascending: true }),
       client.from("portfolio_projects").select("*").order("sort_order", { ascending: true }),
       client.from("contact_links").select("*").order("sort_order", { ascending: true }),
+      client.from("contact_message").select("*").order("created_at", { ascending: false }),
     ]);
 
   const firstError = [
@@ -166,6 +167,7 @@ export async function fetchAdminWebsiteData() {
     categoriesRes.error,
     projectsRes.error,
     contactsRes.error,
+    contactMessagesRes.error,
   ].find(Boolean);
 
   if (firstError) {
@@ -179,6 +181,7 @@ export async function fetchAdminWebsiteData() {
     categories: categoriesRes.data || [],
     projects: projectsRes.data || [],
     contacts: contactsRes.data || [],
+    contactMessages: contactMessagesRes.data || [],
   };
 }
 
@@ -314,6 +317,14 @@ export async function updateContact(id, payload) {
 export async function deleteContact(id) {
   const client = ensureSupabase();
   const { error } = await client.from("contact_links").delete().eq("id", id);
+  if (error) {
+    throw error;
+  }
+}
+
+export async function createContactMessage(payload) {
+  const client = ensureSupabase();
+  const { error } = await client.from("contact_message").insert(payload);
   if (error) {
     throw error;
   }
