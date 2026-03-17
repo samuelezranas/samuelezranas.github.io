@@ -19,7 +19,7 @@ import {
   uploadAsset,
   upsertAboutSettings,
 } from "../lib/siteApi";
-import { isSupabaseConfigured } from "../lib/supabaseClient";
+import { isSupabaseConfigured, supabaseConnectionInfo } from "../lib/supabaseClient";
 import "./admin.css";
 
 const TABS = ["Dashboard", "About", "Certification", "Portfolio", "Contact"];
@@ -66,6 +66,44 @@ const initialContactForm = {
   sortOrder: 0,
   isActive: true,
 };
+
+function ActiveToggle({ checked, onChange, disabled = false }) {
+  return (
+    <button
+      type="button"
+      className={`admin-toggle-btn ${checked ? "is-on" : "is-off"}`}
+      onClick={() => onChange(!checked)}
+      disabled={disabled}
+      aria-pressed={checked}
+      title={checked ? "Status aktif" : "Status nonaktif"}
+    >
+      <span className="admin-toggle-thumb" />
+      <span className="admin-toggle-label">{checked ? "On" : "Off"}</span>
+    </button>
+  );
+}
+
+function formatAdminError(error) {
+  const fallbackMessage = "Terjadi kesalahan saat menghubungkan Admin ke database.";
+  const rawMessage = error?.message || fallbackMessage;
+  const normalizedMessage = String(rawMessage).toLowerCase();
+
+  if (normalizedMessage.includes("failed to fetch")) {
+    const hostLabel = supabaseConnectionInfo.url || "(kosong)";
+    return `Tidak bisa terhubung ke Supabase (${hostLabel}). Cek VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY, lalu pastikan URL project benar dari Supabase Dashboard > Settings > API.`;
+  }
+
+  if (
+    normalizedMessage.includes("schema cache") ||
+    normalizedMessage.includes("relation") ||
+    normalizedMessage.includes("does not exist") ||
+    normalizedMessage.includes("could not find the table")
+  ) {
+    return "Tabel CMS belum ada di project Supabase ini. Jalankan SQL dari file supabase/schema.sql di Supabase Dashboard > SQL Editor, lalu klik Refresh Data.";
+  }
+
+  return rawMessage;
+}
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -124,7 +162,7 @@ export default function AdminPage() {
         categoryId: data.categories[0]?.id || prev.categoryId,
       }));
     } catch (error) {
-      setErrorMessage(error.message || "Gagal memuat data admin.");
+      setErrorMessage(formatAdminError(error));
     } finally {
       setLoading(false);
     }
@@ -160,7 +198,7 @@ export default function AdminPage() {
       await loadData();
       notifySuccess(successText);
     } catch (error) {
-      setErrorMessage(error.message || "Terjadi kesalahan saat menyimpan data.");
+      setErrorMessage(formatAdminError(error));
     }
   };
 
@@ -327,6 +365,14 @@ export default function AdminPage() {
         <header className="admin-topbar">
           <h1>Website Admin Panel</h1>
           <div className="admin-topbar-actions">
+            <button
+              type="button"
+              className="admin-logout-btn"
+              onClick={loadData}
+              disabled={loading || !isSupabaseConfigured}
+            >
+              Refresh Data
+            </button>
             <a href="/">Kembali ke Website</a>
             <button type="button" className="admin-logout-btn" onClick={handleLogout}>
               Logout
@@ -416,18 +462,13 @@ export default function AdminPage() {
                     <p>{photo.image_url}</p>
                     <p>Order: {photo.sort_order}</p>
                     <div className="admin-inline-actions">
-                      <button
-                        type="button"
-                        className="admin-action-btn"
-                        onClick={() =>
-                          runAction(
-                            () => updateAboutPhoto(photo.id, { is_active: !photo.is_active }),
-                            "Status foto diubah."
-                          )
+                      <ActiveToggle
+                        checked={photo.is_active}
+                        disabled={loading || !isSupabaseConfigured}
+                        onChange={(isActive) =>
+                          runAction(() => updateAboutPhoto(photo.id, { is_active: isActive }), "Status foto diubah.")
                         }
-                      >
-                        {photo.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
+                      />
                       <button
                         type="button"
                         className="admin-action-btn"
@@ -484,16 +525,16 @@ export default function AdminPage() {
                   }
                   placeholder="Sort Order"
                 />
-                <label>
-                  <input
-                    type="checkbox"
+                <div className="admin-toggle-row">
+                  <span>Status Aktif</span>
+                  <ActiveToggle
                     checked={certificationForm.isActive}
-                    onChange={(event) =>
-                      setCertificationForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                    disabled={loading || !isSupabaseConfigured}
+                    onChange={(isActive) =>
+                      setCertificationForm((prev) => ({ ...prev, isActive }))
                     }
                   />
-                  Aktif
-                </label>
+                </div>
                 <input type="file" accept="image/*" onChange={(e) => setCertImageFile(e.target.files?.[0])} />
                 <button type="submit" disabled={loading || !isSupabaseConfigured}>
                   Simpan Sertifikat
@@ -509,18 +550,16 @@ export default function AdminPage() {
                     <p>{cert.title}</p>
                     <p>{cert.issuer} · {cert.year}</p>
                     <div className="admin-inline-actions">
-                      <button
-                        type="button"
-                        className="admin-action-btn"
-                        onClick={() =>
+                      <ActiveToggle
+                        checked={cert.is_active}
+                        disabled={loading || !isSupabaseConfigured}
+                        onChange={(isActive) =>
                           runAction(
-                            () => updateCertification(cert.id, { is_active: !cert.is_active }),
+                            () => updateCertification(cert.id, { is_active: isActive }),
                             "Status sertifikat diubah."
                           )
                         }
-                      >
-                        {cert.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
+                      />
                       <button
                         type="button"
                         className="admin-action-btn"
@@ -561,16 +600,16 @@ export default function AdminPage() {
                   }
                   placeholder="Sort Order"
                 />
-                <label>
-                  <input
-                    type="checkbox"
+                <div className="admin-toggle-row">
+                  <span>Status Aktif</span>
+                  <ActiveToggle
                     checked={categoryForm.isActive}
-                    onChange={(event) =>
-                      setCategoryForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                    disabled={loading || !isSupabaseConfigured}
+                    onChange={(isActive) =>
+                      setCategoryForm((prev) => ({ ...prev, isActive }))
                     }
                   />
-                  Aktif
-                </label>
+                </div>
                 <button type="submit" disabled={loading || !isSupabaseConfigured}>
                   Simpan Category
                 </button>
@@ -582,18 +621,16 @@ export default function AdminPage() {
                     <p>{category.name}</p>
                     <p>{category.external_url || "Internal category"}</p>
                     <div className="admin-inline-actions">
-                      <button
-                        type="button"
-                        className="admin-action-btn"
-                        onClick={() =>
+                      <ActiveToggle
+                        checked={category.is_active}
+                        disabled={loading || !isSupabaseConfigured}
+                        onChange={(isActive) =>
                           runAction(
-                            () => updateCategory(category.id, { is_active: !category.is_active }),
+                            () => updateCategory(category.id, { is_active: isActive }),
                             "Status category diubah."
                           )
                         }
-                      >
-                        {category.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
+                      />
                       <button
                         type="button"
                         className="admin-action-btn"
@@ -657,16 +694,16 @@ export default function AdminPage() {
                   }
                   placeholder="Sort Order"
                 />
-                <label>
-                  <input
-                    type="checkbox"
+                <div className="admin-toggle-row">
+                  <span>Status Aktif</span>
+                  <ActiveToggle
                     checked={projectForm.isActive}
-                    onChange={(event) =>
-                      setProjectForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                    disabled={loading || !isSupabaseConfigured}
+                    onChange={(isActive) =>
+                      setProjectForm((prev) => ({ ...prev, isActive }))
                     }
                   />
-                  Aktif
-                </label>
+                </div>
                 <input type="file" accept="image/*" onChange={(e) => setProjectImageFile(e.target.files?.[0])} />
                 <button type="submit" disabled={loading || !isSupabaseConfigured}>
                   Simpan Project
@@ -679,18 +716,16 @@ export default function AdminPage() {
                     <p>{project.title}</p>
                     <p>{project.tech_stack}</p>
                     <div className="admin-inline-actions">
-                      <button
-                        type="button"
-                        className="admin-action-btn"
-                        onClick={() =>
+                      <ActiveToggle
+                        checked={project.is_active}
+                        disabled={loading || !isSupabaseConfigured}
+                        onChange={(isActive) =>
                           runAction(
-                            () => updateProject(project.id, { is_active: !project.is_active }),
+                            () => updateProject(project.id, { is_active: isActive }),
                             "Status project diubah."
                           )
                         }
-                      >
-                        {project.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
+                      />
                       <button
                         type="button"
                         className="admin-action-btn"
@@ -732,16 +767,16 @@ export default function AdminPage() {
                   onChange={(event) => setContactForm((prev) => ({ ...prev, sortOrder: event.target.value }))}
                   placeholder="Sort Order"
                 />
-                <label>
-                  <input
-                    type="checkbox"
+                <div className="admin-toggle-row">
+                  <span>Status Aktif</span>
+                  <ActiveToggle
                     checked={contactForm.isActive}
-                    onChange={(event) =>
-                      setContactForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                    disabled={loading || !isSupabaseConfigured}
+                    onChange={(isActive) =>
+                      setContactForm((prev) => ({ ...prev, isActive }))
                     }
                   />
-                  Aktif
-                </label>
+                </div>
                 <button type="submit" disabled={loading || !isSupabaseConfigured}>
                   Simpan Contact
                 </button>
@@ -756,18 +791,16 @@ export default function AdminPage() {
                     <p>{contact.platform} · {contact.label}</p>
                     <p>{contact.url}</p>
                     <div className="admin-inline-actions">
-                      <button
-                        type="button"
-                        className="admin-action-btn"
-                        onClick={() =>
+                      <ActiveToggle
+                        checked={contact.is_active}
+                        disabled={loading || !isSupabaseConfigured}
+                        onChange={(isActive) =>
                           runAction(
-                            () => updateContact(contact.id, { is_active: !contact.is_active }),
+                            () => updateContact(contact.id, { is_active: isActive }),
                             "Status contact diubah."
                           )
                         }
-                      >
-                        {contact.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
+                      />
                       <button
                         type="button"
                         className="admin-action-btn"

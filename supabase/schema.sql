@@ -67,14 +67,96 @@ alter table portfolio_categories enable row level security;
 alter table portfolio_projects enable row level security;
 alter table contact_links enable row level security;
 
-create policy if not exists "public read about settings" on about_settings for select using (true);
-create policy if not exists "public read about photos" on about_photos for select using (is_active = true);
-create policy if not exists "public read certifications" on certifications for select using (is_active = true);
-create policy if not exists "public read categories" on portfolio_categories for select using (is_active = true);
-create policy if not exists "public read projects" on portfolio_projects for select using (is_active = true);
-create policy if not exists "public read contacts" on contact_links for select using (is_active = true);
+drop policy if exists "public read about settings" on about_settings;
+drop policy if exists "public read about photos" on about_photos;
+drop policy if exists "public read certifications" on certifications;
+drop policy if exists "public read categories" on portfolio_categories;
+drop policy if exists "public read projects" on portfolio_projects;
+drop policy if exists "public read contacts" on contact_links;
 
--- NOTE:
--- Untuk admin panel dari browser, paling aman pakai Supabase Auth + role-based policy.
--- Sementara development cepat, kamu bisa buat policy write sementara berikut:
--- using (true) with check (true) untuk authenticated users.
+drop policy if exists "dev write about settings" on about_settings;
+drop policy if exists "dev write about photos" on about_photos;
+drop policy if exists "dev write certifications" on certifications;
+drop policy if exists "dev write categories" on portfolio_categories;
+drop policy if exists "dev write projects" on portfolio_projects;
+drop policy if exists "dev write contacts" on contact_links;
+
+create policy "public read about settings" on about_settings
+for select
+using (true);
+
+create policy "public read about photos" on about_photos
+for select
+using (is_active = true);
+
+create policy "public read certifications" on certifications
+for select
+using (is_active = true);
+
+create policy "public read categories" on portfolio_categories
+for select
+using (is_active = true);
+
+create policy "public read projects" on portfolio_projects
+for select
+using (is_active = true);
+
+create policy "public read contacts" on contact_links
+for select
+using (is_active = true);
+
+-- Temporary development policy so AdminPage (browser + anon key) can write data.
+-- IMPORTANT: tighten this in production by using Supabase Auth roles.
+create policy "dev write about settings" on about_settings
+for all
+to anon, authenticated
+using (true)
+with check (true);
+
+create policy "dev write about photos" on about_photos
+for all
+to anon, authenticated
+using (true)
+with check (true);
+
+create policy "dev write certifications" on certifications
+for all
+to anon, authenticated
+using (true)
+with check (true);
+
+create policy "dev write categories" on portfolio_categories
+for all
+to anon, authenticated
+using (true)
+with check (true);
+
+create policy "dev write projects" on portfolio_projects
+for all
+to anon, authenticated
+using (true)
+with check (true);
+
+create policy "dev write contacts" on contact_links
+for all
+to anon, authenticated
+using (true)
+with check (true);
+
+insert into storage.buckets (id, name, public)
+values ('website-assets', 'website-assets', true)
+on conflict (id)
+do update set public = excluded.public;
+
+drop policy if exists "public read website assets" on storage.objects;
+drop policy if exists "dev write website assets" on storage.objects;
+
+create policy "public read website assets" on storage.objects
+for select
+using (bucket_id = 'website-assets');
+
+create policy "dev write website assets" on storage.objects
+for all
+to anon, authenticated
+using (bucket_id = 'website-assets')
+with check (bucket_id = 'website-assets');
