@@ -27,6 +27,12 @@ import {
 import { FaJava } from "react-icons/fa";
 import { FaCss3Alt } from "react-icons/fa6";
 import { HiOutlineSparkles } from "react-icons/hi2";
+import {
+  AdobeAfterEffects,
+  AdobeIllustrator,
+  AdobePhotoshop,
+  AdobeXd,
+} from "iconoir-react";
 import { PiPlanetBold } from "react-icons/pi";
 import {
   SiCanva,
@@ -52,7 +58,9 @@ import {
   SiR,
   SiReact,
   SiScikitlearn,
+  SiDiscord,
   SiLetterboxd,
+  SiLine,
   SiSpotify,
   SiVuedotjs,
 } from "react-icons/si";
@@ -307,10 +315,10 @@ const skillMarquees = [
     direction: -1,
     logos: [
       { Icon: SiFigma, name: "Figma", color: "#f24e1e" },
-      { Icon: FiPenTool, name: "Illustrator", color: "#ff9a00" },
-      { Icon: FiImage, name: "Photoshop", color: "#31a8ff" },
-      { Icon: FiMonitor, name: "Adobe XD", color: "#ff61f6" },
-      { Icon: FiFilm, name: "After Effects", color: "#9999ff" },
+      { Icon: AdobeIllustrator, name: "Illustrator", color: "#ff9a00" },
+      { Icon: AdobePhotoshop, name: "Photoshop", color: "#31a8ff" },
+      { Icon: AdobeXd, name: "Adobe XD", color: "#ff61f6" },
+      { Icon: AdobeAfterEffects, name: "After Effects", color: "#9999ff" },
       { Icon: FiFilm, name: "Premiere Pro", color: "#ea77ff" },
       { Icon: FiScissors, name: "CapCut", color: "#ffffff" },
       { Icon: SiCanva, name: "Canva", color: "#00c4cc" },
@@ -943,8 +951,12 @@ export default function App() {
     setActiveProject(target.project);
   };
 
-  const resolveContactIcon = (platform = "") => {
-    const normalized = platform.toLowerCase();
+  const resolveContactIcon = (contact) => {
+    const normalized = [contact?.platform, contact?.label, contact?.url]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
     if (normalized.includes("mail")) {
       return FiMail;
     }
@@ -956,6 +968,12 @@ export default function App() {
     }
     if (normalized.includes("instagram")) {
       return FiInstagram;
+    }
+    if (normalized.includes("line.me") || normalized.includes(" line")) {
+      return SiLine;
+    }
+    if (normalized.includes("discord")) {
+      return SiDiscord;
     }
 
     return FiExternalLink;
@@ -1502,7 +1520,7 @@ export default function App() {
 
             <div className="contact-grid">
               {dynamicContacts.map((contact) => {
-                const ContactIcon = resolveContactIcon(contact.platform);
+                const ContactIcon = resolveContactIcon(contact);
                 const href = contact.url || "#";
                 const isMail = href.startsWith("mailto:");
 
