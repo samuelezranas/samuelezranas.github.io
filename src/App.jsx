@@ -40,7 +40,6 @@ import {
   SiJavascript,
   SiKotlin,
   SiLaravel,
-  SiLine,
   SiMariadb,
   SiMongodb,
   SiMysql,
@@ -53,7 +52,6 @@ import {
   SiR,
   SiReact,
   SiScikitlearn,
-  SiDiscord,
   SiLetterboxd,
   SiSpotify,
   SiVuedotjs,
@@ -322,9 +320,9 @@ const skillMarquees = [
 
 const footerSocialLinks = [
   {
-    name: "Line",
-    href: "https://line.me/ti/p/D4XO3HIBiB",
-    Icon: SiLine,
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/in/samuel-ezra-sirait/",
+    Icon: FiLinkedin,
   },
   {
     name: "Letterboxd",
@@ -337,9 +335,9 @@ const footerSocialLinks = [
     Icon: SiBehance,
   },
   {
-    name: "Discord",
-    href: "https://discord.com/users/520607893993684992",
-    Icon: SiDiscord,
+    name: "GitHub",
+    href: "https://github.com/samuelezranas",
+    Icon: FiGithub,
   },
   {
     name: "Spotify",
@@ -1029,7 +1027,8 @@ export default function App() {
 
       <header className={`topbar ${isAboutActive ? "topbar-visible" : "topbar-hidden"}`}>
         <p className="brand">
-          <PiPlanetBold /> Samuel Ezra
+          <PiPlanetBold />
+          <span className="brand-text" data-text="Samuel Ezra">Samuel Ezra</span>
         </p>
         <button
           className={`menu-toggle ${isMenuOpen ? "active" : ""}`}
