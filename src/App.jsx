@@ -83,6 +83,9 @@ const ENCRYPT_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/\\[]{}@#$%&*";
 const RESUME_URL = "https://drive.google.com/";
 const CONTACT_WA_NUMBER = "6281318994607";
 const CERTIFICATIONS_PER_PAGE = 6;
+const SPLASH_VISIT_KEY = "samuel-splash-seen";
+const SPLASH_TOTAL_DURATION = 4000;
+const SPLASH_EXIT_DURATION = 1200;
 const ABOUT_TITLE = "I\'m Samuel Ezra. Here, I craft digital products with a futuristic mindset.";
 const ABOUT_LEAD =
   "I am an Information Technology undergraduate focused on software engineering, interface design, and visual storytelling. I enjoy building products that are both technically strong and visually memorable. Beyond coding, I care deeply about user flow, visual rhythm, and performance, so every project I build aims to feel smooth, purposeful, and ready for real-world use.";
@@ -387,6 +390,8 @@ export default function App() {
   const [isAboutDragging, setIsAboutDragging] = useState(false);
   const [aboutDragOffsetX, setAboutDragOffsetX] = useState(0);
   const [isAboutActive, setIsAboutActive] = useState(false);
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const [isSplashExiting, setIsSplashExiting] = useState(false);
   const [encryptedHeroText, setEncryptedHeroText] = useState(HOME_TRANSLATIONS[0]);
   const encryptedIndexRef = useRef(0);
   const scrambleFrameRef = useRef(0);
@@ -434,6 +439,43 @@ export default function App() {
   useEffect(() => {
     isPortfolioExpandedRef.current = isPortfolioExpanded;
   }, [isPortfolioExpanded]);
+
+  useEffect(() => {
+    const hasShownSplash = window.sessionStorage.getItem(SPLASH_VISIT_KEY) === "1";
+    if (hasShownSplash) {
+      setIsSplashVisible(false);
+      return undefined;
+    }
+
+    const exitDelay = Math.max(0, SPLASH_TOTAL_DURATION - SPLASH_EXIT_DURATION);
+    const exitTimer = window.setTimeout(() => {
+      setIsSplashExiting(true);
+    }, exitDelay);
+
+    const doneTimer = window.setTimeout(() => {
+      setIsSplashVisible(false);
+      setIsSplashExiting(false);
+      window.sessionStorage.setItem(SPLASH_VISIT_KEY, "1");
+    }, SPLASH_TOTAL_DURATION);
+
+    return () => {
+      window.clearTimeout(exitTimer);
+      window.clearTimeout(doneTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSplashVisible) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isSplashVisible]);
 
   useEffect(() => {
     const runScramble = (targetText) => {
@@ -1039,6 +1081,18 @@ export default function App() {
 
   return (
     <div className={`app-shell ${isAboutActive ? "about-active" : ""}`}>
+      {isSplashVisible && (
+        <div className={`splash-screen ${isSplashExiting ? "is-exiting" : ""}`}>
+          <div className="splash-brand" aria-label="Samuel Ezra brand splash">
+            <span className="splash-name">Samuel Ezra</span>
+            <img
+              src="/packages/images/logo-icon-web.svg"
+              alt="Samuel Ezra Logo"
+              className="splash-logo"
+            />
+          </div>
+        </div>
+      )}
       <div className="space-layer stars-near" />
       <div className="space-layer stars-mid" />
       <div className="space-layer stars-far" />

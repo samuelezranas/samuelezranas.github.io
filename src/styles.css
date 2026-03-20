@@ -40,6 +40,52 @@ a {
   isolation: isolate;
 }
 
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 1100ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1100ms cubic-bezier(0.22, 1, 0.36, 1),
+    backdrop-filter 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: splashIntro 680ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.splash-screen.is-exiting {
+  opacity: 0;
+  transform: scale(1.015);
+  backdrop-filter: blur(7px);
+}
+
+.splash-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.7rem, 2vw, 1rem);
+  animation: splashBrandIn 760ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.splash-name {
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(1.15rem, 3vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #35144f;
+  text-shadow: 0 0 12px rgba(180, 87, 235, 0.2);
+}
+
+.splash-logo {
+  width: clamp(72px, 11vw, 112px);
+  height: auto;
+  filter: drop-shadow(0 0 12px rgba(180, 87, 235, 0.28)) drop-shadow(0 0 30px rgba(125, 70, 188, 0.18));
+  animation: splashPulse 1800ms ease-in-out infinite;
+}
+
 .space-layer {
   position: fixed;
   inset: 0;
@@ -2037,6 +2083,43 @@ h1 span {
   }
   to {
     transform: translateY(-320px);
+  }
+}
+
+@keyframes splashPulse {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.92;
+  }
+
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes splashIntro {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(10px);
+  }
+
+  to {
+    opacity: 1;
+    backdrop-filter: blur(2px);
+  }
+}
+
+@keyframes splashBrandIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
