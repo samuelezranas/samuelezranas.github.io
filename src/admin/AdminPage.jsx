@@ -110,6 +110,54 @@ const CROP_PRESETS = {
   project: { label: "Project", width: 16, height: 9, outputWidth: 1600 },
 };
 
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+function getCropPreviewLayout(cropState) {
+  const sourceWidth = Number(cropState.sourceWidth || 0);
+  const sourceHeight = Number(cropState.sourceHeight || 0);
+  const zoom = Number(cropState.zoom || 1);
+
+  if (!sourceWidth || !sourceHeight) {
+    return {
+      widthPercent: 100,
+      heightPercent: 100,
+      leftPercent: 0,
+      topPercent: 0,
+      canPanX: false,
+      canPanY: false,
+      displayOffsetX: 0,
+      displayOffsetY: 0,
+    };
+  }
+
+  const targetRatio = cropState.preset.width / cropState.preset.height;
+  const sourceRatio = sourceWidth / sourceHeight;
+  const baseWidth = sourceRatio > targetRatio ? sourceRatio / targetRatio : 1;
+  const baseHeight = sourceRatio > targetRatio ? 1 : targetRatio / sourceRatio;
+
+  const scaledWidth = baseWidth * zoom;
+  const scaledHeight = baseHeight * zoom;
+
+  const overflowX = Math.max(0, (scaledWidth - 1) / 2);
+  const overflowY = Math.max(0, (scaledHeight - 1) / 2);
+
+  const rawOffsetX = clamp(Number(cropState.offsetX || 0), -1, 1);
+  const rawOffsetY = clamp(Number(cropState.offsetY || 0), -1, 1);
+  const displayOffsetX = overflowX > 0 ? rawOffsetX : 0;
+  const displayOffsetY = overflowY > 0 ? rawOffsetY : 0;
+
+  return {
+    widthPercent: scaledWidth * 100,
+    heightPercent: scaledHeight * 100,
+    leftPercent: ((1 - scaledWidth) / 2 + displayOffsetX * overflowX) * 100,
+    topPercent: ((1 - scaledHeight) / 2 + displayOffsetY * overflowY) * 100,
+    canPanX: overflowX > 0.0001,
+    canPanY: overflowY > 0.0001,
+    displayOffsetX,
+    displayOffsetY,
+  };
+}
+
 const ADMIN_TECH_ICON_MAP = {
   html: SiHtml5,
   css: FaCss3Alt,
@@ -192,6 +240,12 @@ function IconButton({ icon: Icon, label, variant = "default", ...props }) {
 
 function FileInput({ file, onFileChange, accept = "*/*" }) {
   const inputId = useId();
+  const handleChange = (event) => {
+    const nextFile = event.target.files?.[0] || null;
+    onFileChange(nextFile);
+    // Reset native input so selecting the same file again still triggers onChange.
+    event.target.value = "";
+  };
 
   return (
     <div className="admin-file-input">
@@ -200,7 +254,7 @@ function FileInput({ file, onFileChange, accept = "*/*" }) {
         className="admin-file-native"
         type="file"
         accept={accept}
-        onChange={(event) => onFileChange(event.target.files?.[0] || null)}
+        onChange={handleChange}
       />
       <label htmlFor={inputId} className="admin-file-trigger" title="Pilih file">
         <FiUpload size={15} />
@@ -328,6 +382,8 @@ export default function AdminPage() {
     isOpen: false,
     sourceUrl: "",
     sourceFile: null,
+    sourceWidth: 0,
+    sourceHeight: 0,
     target: "",
     preset: CROP_PRESETS.project,
     zoom: 1,
@@ -358,6 +414,8 @@ export default function AdminPage() {
         isOpen: true,
         sourceUrl,
         sourceFile: file,
+        sourceWidth: 0,
+        sourceHeight: 0,
         target,
         preset,
         zoom: 1,
@@ -377,6 +435,8 @@ export default function AdminPage() {
         isOpen: false,
         sourceUrl: "",
         sourceFile: null,
+        sourceWidth: 0,
+        sourceHeight: 0,
         target: "",
         preset: CROP_PRESETS.project,
         zoom: 1,
@@ -455,6 +515,8 @@ export default function AdminPage() {
       setErrorMessage(error?.message || "Terjadi kesalahan saat crop gambar.");
     }
   };
+
+  const cropPreviewLayout = useMemo(() => getCropPreviewLayout(cropState), [cropState]);
 
   const loadData = async () => {
     if (!isSupabaseConfigured) {
@@ -1842,8 +1904,33 @@ export default function AdminPage() {
               <img
                 src={cropState.sourceUrl}
                 alt="Crop preview"
+                onLoad={(event) => {
+                  const { naturalWidth, naturalHeight, src } = event.currentTarget;
+                  if (!naturalWidth || !naturalHeight) {
+                    return;
+                  }
+
+                  setCropState((prev) => {
+                    if (!prev.isOpen || prev.sourceUrl !== src) {
+                      return prev;
+                    }
+
+                    if (prev.sourceWidth === naturalWidth && prev.sourceHeight === naturalHeight) {
+                      return prev;
+                    }
+
+                    return {
+                      ...prev,
+                      sourceWidth: naturalWidth,
+                      sourceHeight: naturalHeight,
+                    };
+                  });
+                }}
                 style={{
-                  transform: `translate(${cropState.offsetX * 24}%, ${cropState.offsetY * 24}%) scale(${cropState.zoom})`,
+                  width: `${cropPreviewLayout.widthPercent}%`,
+                  height: `${cropPreviewLayout.heightPercent}%`,
+                  left: `${cropPreviewLayout.leftPercent}%`,
+                  top: `${cropPreviewLayout.topPercent}%`,
                 }}
               />
             </div>
@@ -1870,7 +1957,8 @@ export default function AdminPage() {
                   min="-1"
                   max="1"
                   step="0.01"
-                  value={cropState.offsetX}
+                  value={cropPreviewLayout.displayOffsetX}
+                  disabled={!cropPreviewLayout.canPanX}
                   onChange={(event) =>
                     setCropState((prev) => ({ ...prev, offsetX: Number(event.target.value) }))
                   }
@@ -1884,7 +1972,8 @@ export default function AdminPage() {
                   min="-1"
                   max="1"
                   step="0.01"
-                  value={cropState.offsetY}
+                  value={cropPreviewLayout.displayOffsetY}
+                  disabled={!cropPreviewLayout.canPanY}
                   onChange={(event) =>
                     setCropState((prev) => ({ ...prev, offsetY: Number(event.target.value) }))
                   }

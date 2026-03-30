@@ -46,8 +46,12 @@ a {
   z-index: 120;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(2px);
+  padding: clamp(1rem, 3vw, 2.2rem);
+  overflow: hidden;
+  background: radial-gradient(circle at 20% 18%, rgba(255, 127, 211, 0.2), transparent 34%),
+    radial-gradient(circle at 84% 14%, rgba(137, 118, 255, 0.2), transparent 30%),
+    linear-gradient(145deg, rgba(8, 3, 16, 0.92), rgba(21, 8, 30, 0.92));
+  backdrop-filter: blur(10px);
   opacity: 1;
   transform: scale(1);
   transition: opacity 1100ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -58,8 +62,56 @@ a {
 
 .splash-screen.is-exiting {
   opacity: 0;
-  transform: scale(1.015);
-  backdrop-filter: blur(7px);
+  transform: scale(1.025);
+  backdrop-filter: blur(15px);
+}
+
+.splash-noise {
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.34) 0.7px, transparent 0.8px);
+  background-size: 5px 5px;
+  animation: splashNoiseShift 18s linear infinite;
+}
+
+.splash-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.splash-orb-left {
+  width: clamp(240px, 26vw, 420px);
+  height: clamp(240px, 26vw, 420px);
+  left: clamp(-80px, -6vw, -16px);
+  top: clamp(-60px, -5vw, -8px);
+  background: radial-gradient(circle at 35% 35%, rgba(255, 131, 216, 0.55), rgba(94, 52, 158, 0.06) 72%);
+  animation: splashOrbFloatLeft 9.8s ease-in-out infinite;
+}
+
+.splash-orb-right {
+  width: clamp(260px, 28vw, 450px);
+  height: clamp(260px, 28vw, 450px);
+  right: clamp(-90px, -7vw, -20px);
+  bottom: clamp(-88px, -6vw, -20px);
+  background: radial-gradient(circle at 65% 65%, rgba(128, 172, 255, 0.5), rgba(76, 53, 128, 0.08) 72%);
+  animation: splashOrbFloatRight 10.6s ease-in-out infinite;
+}
+
+.splash-brand-card {
+  position: relative;
+  width: min(640px, 100%);
+  display: grid;
+  gap: 0.8rem;
+  padding: clamp(1rem, 2.4vw, 1.45rem);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 155, 235, 0.36);
+  background: linear-gradient(155deg, rgba(33, 15, 49, 0.9), rgba(17, 8, 28, 0.82));
+  box-shadow: 0 24px 70px rgba(5, 2, 14, 0.52), inset 0 0 38px rgba(255, 141, 220, 0.13);
+  animation: splashBrandIn 760ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .splash-brand {
@@ -67,23 +119,67 @@ a {
   align-items: center;
   justify-content: center;
   gap: clamp(0.7rem, 2vw, 1rem);
-  animation: splashBrandIn 760ms cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: 0.15rem;
 }
 
 .splash-name {
   font-family: "Orbitron", sans-serif;
   font-size: clamp(1.15rem, 3vw, 1.9rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #35144f;
-  text-shadow: 0 0 12px rgba(180, 87, 235, 0.2);
+  letter-spacing: 0.08em;
+  color: #f5e9ff;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(199, 129, 252, 0.38);
 }
 
 .splash-logo {
-  width: clamp(72px, 11vw, 112px);
+  width: clamp(68px, 9.5vw, 100px);
   height: auto;
-  filter: drop-shadow(0 0 12px rgba(180, 87, 235, 0.28)) drop-shadow(0 0 30px rgba(125, 70, 188, 0.18));
+  filter: drop-shadow(0 0 14px rgba(201, 105, 255, 0.34)) drop-shadow(0 0 32px rgba(125, 70, 188, 0.24));
   animation: splashPulse 1800ms ease-in-out infinite;
+}
+
+.splash-kicker {
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(0.68rem, 1.5vw, 0.8rem);
+  letter-spacing: 0.2em;
+  color: rgba(255, 215, 248, 0.78);
+}
+
+.splash-status {
+  margin: 0;
+  color: rgba(241, 229, 255, 0.86);
+  font-size: clamp(0.92rem, 2.2vw, 1.08rem);
+}
+
+.splash-progress-track {
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 205, 248, 0.3);
+  overflow: hidden;
+}
+
+.splash-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff81d0 0%, #cd9bff 45%, #7bc8ff 100%);
+  box-shadow: 0 0 22px rgba(201, 144, 255, 0.62);
+  transition: width 140ms linear;
+}
+
+.splash-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(0.72rem, 1.7vw, 0.84rem);
+  letter-spacing: 0.03em;
+  color: rgba(241, 228, 255, 0.86);
 }
 
 .space-layer {
@@ -2102,24 +2198,81 @@ h1 span {
 @keyframes splashIntro {
   from {
     opacity: 0;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(0);
   }
 
   to {
     opacity: 1;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(10px);
   }
 }
 
 @keyframes splashBrandIn {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
+    transform: translateY(12px) scale(0.97);
   }
 
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes splashNoiseShift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(-8%, -12%, 0) rotate(10deg);
+  }
+}
+
+@keyframes splashOrbFloatLeft {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(18px, 10px, 0) scale(1.04);
+  }
+}
+
+@keyframes splashOrbFloatRight {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-16px, -14px, 0) scale(1.05);
+  }
+}
+
+@media (max-width: 640px) {
+  .splash-brand-card {
+    border-radius: 18px;
+    gap: 0.66rem;
+    padding: 0.95rem;
+  }
+
+  .splash-brand {
+    justify-content: flex-start;
+  }
+
+  .splash-status {
+    line-height: 1.32;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-screen,
+  .splash-brand-card,
+  .splash-logo,
+  .splash-noise,
+  .splash-orb-left,
+  .splash-orb-right {
+    animation: none !important;
+    transition: none !important;
   }
 }
 

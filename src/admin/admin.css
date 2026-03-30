@@ -573,6 +573,7 @@
   width: 100%;
   aspect-ratio: var(--crop-ratio);
   max-height: 48vh;
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(255, 188, 231, 0.35);
@@ -580,10 +581,11 @@
 }
 
 .admin-crop-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  position: absolute;
+  max-width: none;
+  max-height: none;
   transform-origin: center;
+  pointer-events: none;
 }
 
 .admin-crop-controls {

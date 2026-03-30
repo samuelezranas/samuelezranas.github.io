@@ -392,6 +392,7 @@ export default function App() {
   const [isAboutActive, setIsAboutActive] = useState(false);
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [isSplashExiting, setIsSplashExiting] = useState(false);
+  const [splashProgress, setSplashProgress] = useState(0);
   const [encryptedHeroText, setEncryptedHeroText] = useState(HOME_TRANSLATIONS[0]);
   const encryptedIndexRef = useRef(0);
   const scrambleFrameRef = useRef(0);
@@ -443,6 +444,7 @@ export default function App() {
   useEffect(() => {
     const hasShownSplash = window.sessionStorage.getItem(SPLASH_VISIT_KEY) === "1";
     if (hasShownSplash) {
+      setSplashProgress(100);
       setIsSplashVisible(false);
       return undefined;
     }
@@ -455,6 +457,7 @@ export default function App() {
     const doneTimer = window.setTimeout(() => {
       setIsSplashVisible(false);
       setIsSplashExiting(false);
+      setSplashProgress(100);
       window.sessionStorage.setItem(SPLASH_VISIT_KEY, "1");
     }, SPLASH_TOTAL_DURATION);
 
@@ -474,6 +477,29 @@ export default function App() {
 
     return () => {
       document.body.style.overflow = previousOverflow;
+    };
+  }, [isSplashVisible]);
+
+  useEffect(() => {
+    if (!isSplashVisible) {
+      return undefined;
+    }
+
+    let rafId = 0;
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const nextProgress = Math.min(100, ((now - startTime) / SPLASH_TOTAL_DURATION) * 100);
+      setSplashProgress(nextProgress);
+      if (nextProgress < 100) {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
     };
   }, [isSplashVisible]);
 
@@ -1083,13 +1109,27 @@ export default function App() {
     <div className={`app-shell ${isAboutActive ? "about-active" : ""}`}>
       {isSplashVisible && (
         <div className={`splash-screen ${isSplashExiting ? "is-exiting" : ""}`}>
-          <div className="splash-brand" aria-label="Samuel Ezra brand splash">
-            <span className="splash-name">Samuel Ezra</span>
-            <img
-              src="/packages/images/logo-icon-web.svg"
-              alt="Samuel Ezra Logo"
-              className="splash-logo"
-            />
+          <div className="splash-noise" aria-hidden="true" />
+          <div className="splash-orb splash-orb-left" aria-hidden="true" />
+          <div className="splash-orb splash-orb-right" aria-hidden="true" />
+          <div className="splash-brand-card" aria-label="Samuel Ezra brand splash">
+            <div className="splash-brand">
+              <span className="splash-name">Samuel Ezra</span>
+              <img
+                src="/packages/images/logo-icon-web.svg"
+                alt="Samuel Ezra Logo"
+                className="splash-logo"
+              />
+            </div>
+            <p className="splash-kicker">INITIALIZING PORTFOLIO EXPERIENCE</p>
+            <p className="splash-status">Loading sections, particles, and interactive modules</p>
+            <div className="splash-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(splashProgress)}>
+              <span className="splash-progress-fill" style={{ width: `${splashProgress}%` }} />
+            </div>
+            <div className="splash-meta">
+              <span>{Math.round(splashProgress)}%</span>
+              <span>Preparing the interface</span>
+            </div>
           </div>
         </div>
       )}
