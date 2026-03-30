@@ -62,6 +62,8 @@ import {
   SiLetterboxd,
   SiLine,
   SiSpotify,
+  SiStreamlit,
+  SiHuggingface,
   SiVuedotjs,
 } from "react-icons/si";
 import Antigravity from "./components/Antigravity";
@@ -259,6 +261,8 @@ const TECH_STACK_META = {
     color: "#ff7f50",
   },
   hapijs: { Icon: SiNodedotjs, url: "https://hapi.dev/", color: "#5fa04e" },
+  streamlit: { Icon: SiStreamlit, url: "https://streamlit.io/", color: "#ff4b4b" },
+  huggingface: { Icon: SiHuggingface, url: "https://huggingface.co/", color: "#ffd21e" },
   geolocation: {
     Icon: PiPlanetBold,
     url: "https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API",
