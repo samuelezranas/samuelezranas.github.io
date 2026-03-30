@@ -442,7 +442,7 @@ export default function App() {
   }, [isPortfolioExpanded]);
 
   useEffect(() => {
-    const hasShownSplash = window.sessionStorage.getItem(SPLASH_VISIT_KEY) === "1";
+    const hasShownSplash = !import.meta.env.DEV && window.sessionStorage.getItem(SPLASH_VISIT_KEY) === "1";
     if (hasShownSplash) {
       setSplashProgress(100);
       setIsSplashVisible(false);
