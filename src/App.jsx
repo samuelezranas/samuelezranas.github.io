@@ -417,7 +417,12 @@ export default function App() {
       return;
     }
 
+    const currentTop = window.scrollY;
     const targetTop = targetSection.offsetTop;
+    const travelDistance = Math.abs(targetTop - currentTop);
+    const settleDelay = Math.max(520, Math.min(1200, Math.round(420 + travelDistance * 0.18)));
+    const unlockDelay = settleDelay + 170;
+
     scrollSnapLockedRef.current = true;
     window.scrollTo({
       top: targetTop,
@@ -431,14 +436,33 @@ export default function App() {
         top: targetSection.offsetTop,
         behavior: "auto",
       });
-    }, 430);
+    }, settleDelay);
 
     window.clearTimeout(snapTimeoutRef.current);
     snapTimeoutRef.current = window.setTimeout(() => {
       scrollSnapLockedRef.current = false;
-    }, 560);
+    }, unlockDelay);
 
     setIsMenuOpen(false);
+  };
+
+  const handleNavbarClick = (event) => {
+    const targetHash = event.currentTarget.getAttribute("href");
+    if (!targetHash || !targetHash.startsWith("#")) {
+      return;
+    }
+
+    const targetSection = document.querySelector(targetHash);
+    if (!targetSection) {
+      return;
+    }
+
+    event.preventDefault();
+    smoothSnapToSection(targetSection);
+
+    if (window.location.hash !== targetHash) {
+      window.history.replaceState(null, "", targetHash);
+    }
   };
 
   useEffect(() => {
@@ -1153,12 +1177,13 @@ export default function App() {
           {isMenuOpen ? <FiX /> : <FiMenu />}
         </button>
         <nav className={isMenuOpen ? "open" : ""}>
-          <a href="#home">Home</a>
-          <a href="#about">About</a>
-          <a href="#skills">Skill</a>
-          <a href="#certification">Certification</a>
-          <a href="#portfolio">Portfolio</a>
-          <a href="#contact">Contact</a>
+          <a href="#home" onClick={handleNavbarClick}>Home</a>
+          <a href="#about" onClick={handleNavbarClick}>About</a>
+          <a href="#skills" onClick={handleNavbarClick}>Skill</a>
+          <a href="#certification" onClick={handleNavbarClick}>Certification</a>
+          <a href="#portfolio" onClick={handleNavbarClick}>Portfolio</a>
+          <a href="#contact" onClick={handleNavbarClick}>Contact</a>
+          <a href="#contact" className="nav-hire-me" onClick={handleNavbarClick}>HIRE ME</a>
         </nav>
       </header>
 

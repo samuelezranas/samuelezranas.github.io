@@ -345,31 +345,77 @@ a {
 
 .topbar nav {
   display: flex;
-  gap: 0.9rem;
+  align-items: center;
+  gap: 1rem;
 }
 
 .topbar nav a {
+  position: relative;
   text-decoration: none;
-  border: 1px solid transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0.3rem 0.5rem;
+  background: transparent;
+  color: rgba(246, 239, 255, 0.84);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.topbar nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.32rem;
+  width: 100%;
+  height: 2px;
   border-radius: 999px;
-  padding: 0.3rem 0.75rem;
-  background: rgba(52, 17, 67, 0.18);
-  color: var(--text);
-  box-shadow: inset 0 0 0 1px rgba(255, 182, 230, 0.06);
+  background: linear-gradient(90deg, #ff7fd8 0%, #8f7dff 100%);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 240ms ease;
 }
 
 .topbar nav a:hover {
-  border-color: rgba(255, 205, 237, 0.82);
-  color: #fff0fb;
-  background: linear-gradient(125deg, rgba(121, 77, 255, 0.86), rgba(255, 84, 176, 0.84));
-  box-shadow: 0 10px 20px rgba(134, 85, 255, 0.32), 0 6px 16px rgba(255, 91, 181, 0.25);
+  color: #ffd5f1;
+}
+
+.topbar nav a:hover::after {
+  transform: scaleX(1);
 }
 
 .topbar nav a:focus-visible {
-  border-color: rgba(255, 205, 237, 0.82);
-  color: #fff0fb;
-  background: linear-gradient(125deg, rgba(121, 77, 255, 0.86), rgba(255, 84, 176, 0.84));
-  box-shadow: 0 10px 20px rgba(134, 85, 255, 0.32), 0 6px 16px rgba(255, 91, 181, 0.25);
+  color: #ffd5f1;
+}
+
+.topbar nav a:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.topbar nav .nav-hire-me {
+  margin-left: 0.75rem;
+  padding: 0.44rem 1rem;
+  border-radius: 999px;
+  font-family: "Oxanium", "Orbitron", sans-serif;
+  letter-spacing: 0.07em;
+  font-size: 0.9rem;
+  color: #fff8ff;
+  border: 1px solid rgba(255, 216, 243, 0.9);
+  background: linear-gradient(110deg, #ff5bcf 0%, #8f61ff 100%);
+  box-shadow: 0 10px 22px rgba(255, 91, 207, 0.28), 0 6px 18px rgba(143, 97, 255, 0.24);
+  transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+}
+
+.topbar nav .nav-hire-me::after {
+  display: none;
+}
+
+.topbar nav .nav-hire-me:hover,
+.topbar nav .nav-hire-me:focus-visible {
+  color: #ffffff;
+  transform: translateY(-2px);
+  filter: saturate(1.12);
+  box-shadow: 0 14px 26px rgba(255, 91, 207, 0.36), 0 9px 21px rgba(143, 97, 255, 0.32);
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Ccircle cx='14' cy='14' r='6.5' fill='%23ff71cc' stroke='%23ffffff' stroke-width='1.4'/%3E%3Cellipse cx='14' cy='14' rx='11' ry='4.2' stroke='%238d74ff' stroke-width='1.6'/%3E%3C/g%3E%3C/svg%3E") 14 14, pointer;
   outline: none;
 }
 
@@ -417,6 +463,14 @@ a {
 
 .topbar-visible nav a:nth-child(5) {
   transition-delay: 260ms;
+}
+
+.topbar-visible nav a:nth-child(6) {
+  transition-delay: 300ms;
+}
+
+.topbar-visible nav a:nth-child(7) {
+  transition-delay: 340ms;
 }
 
 main {
@@ -2319,6 +2373,10 @@ h1 span {
 
   .topbar nav a {
     text-align: center;
+  }
+
+  .topbar nav .nav-hire-me {
+    margin-left: 0;
   }
 
   main {
