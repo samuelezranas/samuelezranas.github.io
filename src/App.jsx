@@ -398,6 +398,8 @@ export default function App() {
   const [isSplashExiting, setIsSplashExiting] = useState(false);
   const [splashProgress, setSplashProgress] = useState(0);
   const [encryptedHeroText, setEncryptedHeroText] = useState(HOME_TRANSLATIONS[0]);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [mobileSectionLabel, setMobileSectionLabel] = useState("Home");
   const encryptedIndexRef = useRef(0);
   const scrambleFrameRef = useRef(0);
   const homeSectionRef = useRef(null);
@@ -492,6 +494,60 @@ export default function App() {
     return () => {
       window.clearTimeout(exitTimer);
       window.clearTimeout(doneTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mobileMedia = window.matchMedia("(max-width: 920px)");
+
+    const syncViewport = () => {
+      setIsMobileViewport(mobileMedia.matches);
+    };
+
+    syncViewport();
+    mobileMedia.addEventListener("change", syncViewport);
+
+    return () => {
+      mobileMedia.removeEventListener("change", syncViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    const sectionLabels = {
+      home: "Home",
+      about: "About",
+      skills: "Skill",
+      certification: "Certification",
+      portfolio: "Portfolio",
+      contact: "Contact",
+    };
+
+    const syncMobileSection = () => {
+      const sections = Array.from(document.querySelectorAll("main .section-page"));
+      if (!sections.length) {
+        setMobileSectionLabel("Home");
+        return;
+      }
+
+      const probePosition = window.scrollY + window.innerHeight * 0.28;
+      let activeSectionId = "home";
+
+      sections.forEach((section) => {
+        if (section.offsetTop <= probePosition && section.id) {
+          activeSectionId = section.id;
+        }
+      });
+
+      setMobileSectionLabel(sectionLabels[activeSectionId] || "Home");
+    };
+
+    syncMobileSection();
+    window.addEventListener("scroll", syncMobileSection, { passive: true });
+    window.addEventListener("resize", syncMobileSection);
+
+    return () => {
+      window.removeEventListener("scroll", syncMobileSection);
+      window.removeEventListener("resize", syncMobileSection);
     };
   }, []);
 
@@ -1037,6 +1093,7 @@ export default function App() {
     activeProjectIndex >= 0 && activeProjectIndex < detailProjectSequence.length - 1
       ? detailProjectSequence[activeProjectIndex + 1]
       : null;
+  const isMobileBreadcrumbOnly = isMobileViewport && mobileSectionLabel !== "Home";
 
   const openProjectDetail = (target) => {
     if (!target) {
@@ -1165,26 +1222,52 @@ export default function App() {
       <div className="space-layer stars-mid" />
       <div className="space-layer stars-far" />
 
-      <header className={`topbar ${isAboutActive ? "topbar-visible" : "topbar-hidden"}`}>
-        <p className="brand">
-          <PiPlanetBold />
-          <span className="brand-text" data-text="Samuel Ezra">Samuel Ezra</span>
-        </p>
-        <button
-          className={`menu-toggle ${isMenuOpen ? "active" : ""}`}
-          onClick={() => setIsMenuOpen((prev) => !prev)}
-        >
-          {isMenuOpen ? <FiX /> : <FiMenu />}
-        </button>
-        <nav className={isMenuOpen ? "open" : ""}>
-          <a href="#home" onClick={handleNavbarClick}>Home</a>
-          <a href="#about" onClick={handleNavbarClick}>About</a>
-          <a href="#skills" onClick={handleNavbarClick}>Skill</a>
-          <a href="#certification" onClick={handleNavbarClick}>Certification</a>
-          <a href="#portfolio" onClick={handleNavbarClick}>Portfolio</a>
-          <a href="#contact" onClick={handleNavbarClick}>Contact</a>
-          <a href="#contact" className="nav-hire-me" onClick={handleNavbarClick}>HIRE ME</a>
-        </nav>
+      <header
+        className={`topbar ${isMobileViewport || isAboutActive ? "topbar-visible" : "topbar-hidden"}${
+          isMobileBreadcrumbOnly ? " topbar-mobile-breadcrumb" : ""
+        }`}
+      >
+        {isMobileBreadcrumbOnly ? (
+          <>
+            <button
+              className={`menu-toggle ${isMenuOpen ? "active" : ""}`}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+            >
+              {isMenuOpen ? <FiX /> : <FiMenu />}
+            </button>
+            <nav className={isMenuOpen ? "open" : ""}>
+              <a href="#home" onClick={handleNavbarClick}>Home</a>
+              <a href="#about" onClick={handleNavbarClick}>About</a>
+              <a href="#skills" onClick={handleNavbarClick}>Skill</a>
+              <a href="#certification" onClick={handleNavbarClick}>Certification</a>
+              <a href="#portfolio" onClick={handleNavbarClick}>Portfolio</a>
+              <a href="#contact" onClick={handleNavbarClick}>Contact</a>
+              <a href="#contact" className="nav-hire-me" onClick={handleNavbarClick}>HIRE ME</a>
+            </nav>
+          </>
+        ) : (
+          <>
+            <p className="brand">
+              <PiPlanetBold />
+              <span className="brand-text" data-text="Samuel Ezra">Samuel Ezra</span>
+            </p>
+            <button
+              className={`menu-toggle ${isMenuOpen ? "active" : ""}`}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+            >
+              {isMenuOpen ? <FiX /> : <FiMenu />}
+            </button>
+            <nav className={isMenuOpen ? "open" : ""}>
+              <a href="#home" onClick={handleNavbarClick}>Home</a>
+              <a href="#about" onClick={handleNavbarClick}>About</a>
+              <a href="#skills" onClick={handleNavbarClick}>Skill</a>
+              <a href="#certification" onClick={handleNavbarClick}>Certification</a>
+              <a href="#portfolio" onClick={handleNavbarClick}>Portfolio</a>
+              <a href="#contact" onClick={handleNavbarClick}>Contact</a>
+              <a href="#contact" className="nav-hire-me" onClick={handleNavbarClick}>HIRE ME</a>
+            </nav>
+          </>
+        )}
       </header>
 
       <main>
