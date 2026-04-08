@@ -1315,7 +1315,7 @@ export default function App() {
                   rel="noreferrer"
                   className="resume-cta"
                 >
-                  <FiFileText /> CV / Resume
+                  <FiFileText /> My Resume
                 </a>
               </div>
             </div>
