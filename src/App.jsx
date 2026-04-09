@@ -413,6 +413,9 @@ export default function App() {
   const aboutSwipeTimeoutRef = useRef(0);
   const aboutPointerStartXRef = useRef(null);
   const aboutActivePointerIdRef = useRef(null);
+  const rocketTrailPointsRef = useRef([]);
+  const rocketTrailNodesRef = useRef([]);
+  const rocketTrailFrameRef = useRef(0);
 
   const smoothSnapToSection = (targetSection) => {
     if (!targetSection) {
@@ -1190,6 +1193,151 @@ export default function App() {
     return () => window.clearTimeout(timeout);
   }, [contactMessageSuccess]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const pointerCapability = window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (!pointerCapability.matches) {
+      return undefined;
+    }
+
+    const rootElement = document.documentElement;
+    rootElement.classList.add("custom-cursor-enabled");
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const TRAIL_DURATION_MS = 360;
+
+    let isFrameB = false;
+    let frameInterval = 0;
+
+    if (!motionPreference.matches) {
+      frameInterval = window.setInterval(() => {
+        isFrameB = !isFrameB;
+        rootElement.classList.toggle("custom-cursor-frame-b", isFrameB);
+      }, 140);
+    }
+
+    const handlePointerDown = () => {
+      rootElement.classList.add("custom-cursor-boost");
+    };
+
+    const handlePointerUp = () => {
+      rootElement.classList.remove("custom-cursor-boost");
+    };
+
+    const handlePointerMove = (event) => {
+      const now = performance.now();
+      const trailPoints = rocketTrailPointsRef.current;
+      const lastPoint = trailPoints[trailPoints.length - 1];
+      const dx = lastPoint ? event.clientX - lastPoint.x : 0;
+      const dy = lastPoint ? event.clientY - lastPoint.y : 0;
+      const speed = Math.hypot(dx, dy);
+      const angle = lastPoint ? Math.atan2(dy, dx) : Math.PI / 4;
+
+      trailPoints.push({
+        x: event.clientX,
+        y: event.clientY,
+        speed,
+        angle,
+        time: now,
+      });
+
+      while (trailPoints.length > 60 || (trailPoints[0] && now - trailPoints[0].time > TRAIL_DURATION_MS)) {
+        trailPoints.shift();
+      }
+    };
+
+    const handlePointerLeave = () => {
+      rootElement.classList.remove("custom-cursor-boost");
+      rocketTrailPointsRef.current = [];
+      rocketTrailNodesRef.current.forEach((node) => {
+        if (!node) {
+          return;
+        }
+
+        node.style.opacity = "0";
+      });
+    };
+
+    const updateTrail = () => {
+      const now = performance.now();
+      const trailPoints = rocketTrailPointsRef.current.filter(
+        (point) => now - point.time <= TRAIL_DURATION_MS
+      );
+      rocketTrailPointsRef.current = trailPoints;
+
+      const nodes = rocketTrailNodesRef.current;
+      const nodeCount = nodes.length;
+      const lastIndex = trailPoints.length - 1;
+      const samplingStep =
+        trailPoints.length > 1
+          ? Math.max(1, Math.floor(lastIndex / Math.max(1, nodeCount - 1)))
+          : 1;
+
+      for (let index = 0; index < nodeCount; index += 1) {
+        const node = nodes[index];
+        if (!node) {
+          continue;
+        }
+
+        if (!trailPoints.length) {
+          node.style.opacity = "0";
+          continue;
+        }
+
+        const sourceIndex = Math.max(0, lastIndex - index * samplingStep);
+        const closestPoint = trailPoints[sourceIndex];
+
+        const age = now - closestPoint.time;
+        const ageFade = 1 - age / TRAIL_DURATION_MS;
+        const depthFade = 1 - index / Math.max(1, nodeCount);
+        const opacity = Math.max(0, ageFade * depthFade * 0.86);
+        const speedScale = Math.min(1.45, 0.9 + closestPoint.speed / 30);
+        const smokeScale = Math.max(0.22, (0.32 + (1 - ageFade) * 0.7) * speedScale);
+        const driftBack = (1 - ageFade) * (2 + index * 0.22);
+        const wobble = Math.sin(now * 0.016 + index * 1.03) * (0.55 + (1 - ageFade) * 0.8);
+        const perpX = -Math.sin(closestPoint.angle || 0);
+        const perpY = Math.cos(closestPoint.angle || 0);
+        const driftX = -Math.cos(closestPoint.angle || 0) * driftBack + perpX * wobble;
+        const driftY = -Math.sin(closestPoint.angle || 0) * driftBack + perpY * wobble;
+
+        node.style.opacity = opacity.toFixed(3);
+        node.style.transform = `translate3d(${(closestPoint.x + 9 + driftX).toFixed(2)}px, ${(
+          closestPoint.y + 9 + driftY
+        ).toFixed(2)}px, 0) scale(${smokeScale.toFixed(3)})`;
+      }
+
+      rocketTrailFrameRef.current = window.requestAnimationFrame(updateTrail);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    window.addEventListener("pointerup", handlePointerUp, { passive: true });
+    document.addEventListener("mouseleave", handlePointerLeave);
+    rocketTrailFrameRef.current = window.requestAnimationFrame(updateTrail);
+
+    return () => {
+      if (frameInterval) {
+        window.clearInterval(frameInterval);
+      }
+      if (rocketTrailFrameRef.current) {
+        window.cancelAnimationFrame(rocketTrailFrameRef.current);
+      }
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointerup", handlePointerUp);
+      document.removeEventListener("mouseleave", handlePointerLeave);
+      rootElement.classList.remove(
+        "custom-cursor-enabled",
+        "custom-cursor-frame-b",
+        "custom-cursor-boost"
+      );
+      rocketTrailPointsRef.current = [];
+      rocketTrailNodesRef.current = [];
+    };
+  }, []);
+
   return (
     <div className={`app-shell ${isAboutActive ? "about-active" : ""}`}>
       {isSplashVisible && (
@@ -1816,7 +1964,20 @@ export default function App() {
             })}
           </div>
         </footer>
+
       </main>
+
+      <div className="rocket-trail-layer" aria-hidden="true">
+        {Array.from({ length: 22 }).map((_, index) => (
+          <span
+            key={`rocket-trail-node-${index}`}
+            className="rocket-trail-node"
+            ref={(node) => {
+              rocketTrailNodesRef.current[index] = node;
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
