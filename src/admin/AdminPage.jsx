@@ -392,6 +392,7 @@ export default function AdminPage() {
   const [contactForm, setContactForm] = useState(initialContactForm);
   const [contacts, setContacts] = useState([]);
   const [contactMessages, setContactMessages] = useState([]);
+  const [createFormType, setCreateFormType] = useState(null);
 
   const [detailState, setDetailState] = useState({ type: null, id: null, isEditing: false });
   const [detailDraft, setDetailDraft] = useState(null);
@@ -576,6 +577,28 @@ export default function AdminPage() {
 
     loadData();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!createFormType) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onEscape = (event) => {
+      if (event.key === "Escape") {
+        setCreateFormType(null);
+      }
+    };
+
+    window.addEventListener("keydown", onEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onEscape);
+    };
+  }, [createFormType]);
 
   const dashboardMetrics = useMemo(
     () => [
@@ -837,6 +860,7 @@ export default function AdminPage() {
       });
       setAboutUploadFile(null);
       setAboutUploadOrder(0);
+      setCreateFormType(null);
     }, "Foto About berhasil diunggah.");
   };
 
@@ -860,6 +884,7 @@ export default function AdminPage() {
       });
       setCertificationForm(initialCertificationForm);
       setCertImageFile(null);
+      setCreateFormType(null);
     }, "Sertifikat berhasil ditambahkan.");
   };
 
@@ -873,6 +898,7 @@ export default function AdminPage() {
         is_active: true,
       });
       setCategoryForm(initialCategoryForm);
+      setCreateFormType(null);
     }, "Category berhasil ditambahkan.");
   };
 
@@ -902,6 +928,7 @@ export default function AdminPage() {
       });
       setProjectForm((prev) => ({ ...initialProjectForm, categoryId: prev.categoryId }));
       setProjectImageFile(null);
+      setCreateFormType(null);
     }, "Project berhasil ditambahkan.");
   };
 
@@ -916,6 +943,7 @@ export default function AdminPage() {
         is_active: true,
       });
       setContactForm(initialContactForm);
+      setCreateFormType(null);
     }, "Contact link berhasil ditambahkan.");
   };
 
@@ -1475,24 +1503,16 @@ export default function AdminPage() {
                 </article>
 
                 <article className="admin-card">
-                  <h3>About Photos</h3>
-                  <form className="admin-form" onSubmit={onUploadAboutPhoto}>
-                    <FileInput
-                      file={aboutUploadFile}
-                      accept="image/*"
-                      onFileChange={(file) => openCropper("about-upload", file, CROP_PRESETS.about)}
+                  <div className="admin-card-head">
+                    <h3>About Photos</h3>
+                    <IconButton
+                      icon={FiPlusCircle}
+                      label="Tambah"
+                      variant="success"
+                      onClick={() => setCreateFormType("about-photo")}
+                      disabled={loading || !isSupabaseConfigured}
                     />
-                    <input
-                      type="number"
-                      value={aboutUploadOrder}
-                      onChange={(event) => setAboutUploadOrder(event.target.value)}
-                      placeholder="Sort Order"
-                    />
-                    <button type="submit" disabled={loading || !isSupabaseConfigured}>
-                      <FiPlusCircle size={14} />
-                      <span>Upload Foto</span>
-                    </button>
-                  </form>
+                  </div>
 
                   <div className="admin-list">
                     {aboutPhotos.map((photo, index) => (
@@ -1537,60 +1557,19 @@ export default function AdminPage() {
             )}
 
             {activeTab === "Certification" && (
-              <section className="admin-grid">
+              <section className="admin-grid admin-grid-single">
                 <article className="admin-card">
-                  <h3>Tambah Sertifikat</h3>
-                  <form className="admin-form" onSubmit={onCreateCertification}>
-                    <input
-                      value={certificationForm.title}
-                      onChange={(event) =>
-                        setCertificationForm((prev) => ({ ...prev, title: event.target.value }))
-                      }
-                      placeholder="Judul Sertifikat"
+                  <div className="admin-card-head">
+                    <h3>List Sertifikat</h3>
+                    <IconButton
+                      icon={FiPlusCircle}
+                      label="Tambah"
+                      variant="success"
+                      onClick={() => setCreateFormType("certification")}
+                      disabled={loading || !isSupabaseConfigured}
                     />
-                    <input
-                      value={certificationForm.issuer}
-                      onChange={(event) =>
-                        setCertificationForm((prev) => ({ ...prev, issuer: event.target.value }))
-                      }
-                      placeholder="Issuer"
-                    />
-                    <input
-                      value={certificationForm.year}
-                      onChange={(event) =>
-                        setCertificationForm((prev) => ({ ...prev, year: event.target.value }))
-                      }
-                      placeholder="Tahun"
-                    />
-                    <input
-                      value={certificationForm.credentialUrl}
-                      onChange={(event) =>
-                        setCertificationForm((prev) => ({ ...prev, credentialUrl: event.target.value }))
-                      }
-                      placeholder="Link Sertifikat"
-                    />
-                    <input
-                      type="number"
-                      value={certificationForm.sortOrder}
-                      onChange={(event) =>
-                        setCertificationForm((prev) => ({ ...prev, sortOrder: event.target.value }))
-                      }
-                      placeholder="Sort Order"
-                    />
-                    <FileInput
-                      file={certImageFile}
-                      accept="image/*"
-                      onFileChange={(file) => openCropper("cert-create", file, CROP_PRESETS.certification)}
-                    />
-                    <button type="submit" disabled={loading || !isSupabaseConfigured}>
-                      <FiPlusCircle size={14} />
-                      <span>Simpan Sertifikat</span>
-                    </button>
-                  </form>
-                </article>
-
-                <article className="admin-card">
-                  <h3>List Sertifikat</h3>
+                  </div>
+                  <p className="admin-card-note">Gunakan tombol Tambah untuk membuat data sertifikat baru.</p>
                   <div className="admin-list">
                     {certifications.map((cert, index) => (
                       <button
@@ -1637,33 +1616,16 @@ export default function AdminPage() {
             {activeTab === "Portfolio" && (
               <section className="admin-grid">
                 <article className="admin-card">
-                  <h3>Tambah Category</h3>
-                  <form className="admin-form" onSubmit={onCreateCategory}>
-                    <input
-                      value={categoryForm.name}
-                      onChange={(event) => setCategoryForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="Nama Category"
+                  <div className="admin-card-head">
+                    <h3>Category</h3>
+                    <IconButton
+                      icon={FiPlusCircle}
+                      label="Tambah"
+                      variant="success"
+                      onClick={() => setCreateFormType("category")}
+                      disabled={loading || !isSupabaseConfigured}
                     />
-                    <input
-                      value={categoryForm.externalUrl}
-                      onChange={(event) =>
-                        setCategoryForm((prev) => ({ ...prev, externalUrl: event.target.value }))
-                      }
-                      placeholder="External URL (opsional)"
-                    />
-                    <input
-                      type="number"
-                      value={categoryForm.sortOrder}
-                      onChange={(event) =>
-                        setCategoryForm((prev) => ({ ...prev, sortOrder: event.target.value }))
-                      }
-                      placeholder="Sort Order"
-                    />
-                    <button type="submit" disabled={loading || !isSupabaseConfigured}>
-                      <FiPlusCircle size={14} />
-                      <span>Simpan Category</span>
-                    </button>
-                  </form>
+                  </div>
 
                   <div className="admin-list">
                     {categories.map((category, index) => (
@@ -1703,65 +1665,16 @@ export default function AdminPage() {
                 </article>
 
                 <article className="admin-card">
-                  <h3>Tambah Project</h3>
-                  <form className="admin-form" onSubmit={onCreateProject}>
-                    <select
-                      value={projectForm.categoryId}
-                      onChange={(event) =>
-                        setProjectForm((prev) => ({ ...prev, categoryId: event.target.value }))
-                      }
-                    >
-                      <option value="">Pilih Category</option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      value={projectForm.title}
-                      onChange={(event) => setProjectForm((prev) => ({ ...prev, title: event.target.value }))}
-                      placeholder="Judul Project"
+                  <div className="admin-card-head">
+                    <h3>Project</h3>
+                    <IconButton
+                      icon={FiPlusCircle}
+                      label="Tambah"
+                      variant="success"
+                      onClick={() => setCreateFormType("project")}
+                      disabled={loading || !isSupabaseConfigured}
                     />
-                    <textarea
-                      value={projectForm.description}
-                      onChange={(event) =>
-                        setProjectForm((prev) => ({ ...prev, description: event.target.value }))
-                      }
-                      placeholder="Deskripsi Project"
-                    />
-                    <input
-                      value={projectForm.techStack}
-                      onChange={(event) =>
-                        setProjectForm((prev) => ({ ...prev, techStack: event.target.value }))
-                      }
-                      placeholder="Tech Stack (pisahkan dengan koma)"
-                    />
-                    <input
-                      value={projectForm.repositoryUrl}
-                      onChange={(event) =>
-                        setProjectForm((prev) => ({ ...prev, repositoryUrl: event.target.value }))
-                      }
-                      placeholder="Link Repository"
-                    />
-                    <input
-                      type="number"
-                      value={projectForm.sortOrder}
-                      onChange={(event) =>
-                        setProjectForm((prev) => ({ ...prev, sortOrder: event.target.value }))
-                      }
-                      placeholder="Sort Order"
-                    />
-                    <FileInput
-                      file={projectImageFile}
-                      accept="image/*"
-                      onFileChange={(file) => openCropper("project-create", file, CROP_PRESETS.project)}
-                    />
-                    <button type="submit" disabled={loading || !isSupabaseConfigured}>
-                      <FiPlusCircle size={14} />
-                      <span>Simpan Project</span>
-                    </button>
-                  </form>
+                  </div>
 
                   <div className="admin-list">
                     {projects.map((project, index) => (
@@ -1805,34 +1718,16 @@ export default function AdminPage() {
             {activeTab === "Contact" && (
               <section className="admin-grid">
                 <article className="admin-card">
-                  <h3>Tambah Contact</h3>
-                  <form className="admin-form" onSubmit={onCreateContact}>
-                    <input
-                      value={contactForm.platform}
-                      onChange={(event) => setContactForm((prev) => ({ ...prev, platform: event.target.value }))}
-                      placeholder="Platform"
+                  <div className="admin-card-head">
+                    <h3>Contact</h3>
+                    <IconButton
+                      icon={FiPlusCircle}
+                      label="Tambah"
+                      variant="success"
+                      onClick={() => setCreateFormType("contact")}
+                      disabled={loading || !isSupabaseConfigured}
                     />
-                    <input
-                      value={contactForm.label}
-                      onChange={(event) => setContactForm((prev) => ({ ...prev, label: event.target.value }))}
-                      placeholder="Label"
-                    />
-                    <input
-                      value={contactForm.url}
-                      onChange={(event) => setContactForm((prev) => ({ ...prev, url: event.target.value }))}
-                      placeholder="URL"
-                    />
-                    <input
-                      type="number"
-                      value={contactForm.sortOrder}
-                      onChange={(event) => setContactForm((prev) => ({ ...prev, sortOrder: event.target.value }))}
-                      placeholder="Sort Order"
-                    />
-                    <button type="submit" disabled={loading || !isSupabaseConfigured}>
-                      <FiPlusCircle size={14} />
-                      <span>Simpan Contact</span>
-                    </button>
-                  </form>
+                  </div>
 
                   <h3 className="admin-subsection-title">List Contact</h3>
                   <div className="admin-list">
@@ -1901,6 +1796,218 @@ export default function AdminPage() {
           </>
         )}
       </div>
+
+      {createFormType && (
+        <div className="admin-create-overlay" role="presentation" onClick={() => setCreateFormType(null)}>
+          <section
+            className="admin-create-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="admin-create-head">
+              <h3>
+                {createFormType === "about-photo" && "Tambah About Photo"}
+                {createFormType === "certification" && "Tambah Sertifikat"}
+                {createFormType === "category" && "Tambah Category"}
+                {createFormType === "project" && "Tambah Project"}
+                {createFormType === "contact" && "Tambah Contact"}
+              </h3>
+              <IconButton icon={FiX} label="Tutup" variant="ghost" onClick={() => setCreateFormType(null)} />
+            </div>
+
+            {createFormType === "about-photo" && (
+              <form className="admin-form" onSubmit={onUploadAboutPhoto}>
+                <FileInput
+                  file={aboutUploadFile}
+                  accept="image/*"
+                  onFileChange={(file) => openCropper("about-upload", file, CROP_PRESETS.about)}
+                />
+                <input
+                  type="number"
+                  value={aboutUploadOrder}
+                  onChange={(event) => setAboutUploadOrder(event.target.value)}
+                  placeholder="Sort Order"
+                />
+                <button type="submit" disabled={loading || !isSupabaseConfigured}>
+                  <FiPlusCircle size={14} />
+                  <span>Upload Foto</span>
+                </button>
+              </form>
+            )}
+
+            {createFormType === "certification" && (
+              <form className="admin-form" onSubmit={onCreateCertification}>
+                <input
+                  value={certificationForm.title}
+                  onChange={(event) =>
+                    setCertificationForm((prev) => ({ ...prev, title: event.target.value }))
+                  }
+                  placeholder="Judul Sertifikat"
+                />
+                <input
+                  value={certificationForm.issuer}
+                  onChange={(event) =>
+                    setCertificationForm((prev) => ({ ...prev, issuer: event.target.value }))
+                  }
+                  placeholder="Issuer"
+                />
+                <input
+                  value={certificationForm.year}
+                  onChange={(event) =>
+                    setCertificationForm((prev) => ({ ...prev, year: event.target.value }))
+                  }
+                  placeholder="Tahun"
+                />
+                <input
+                  value={certificationForm.credentialUrl}
+                  onChange={(event) =>
+                    setCertificationForm((prev) => ({ ...prev, credentialUrl: event.target.value }))
+                  }
+                  placeholder="Link Sertifikat"
+                />
+                <input
+                  type="number"
+                  value={certificationForm.sortOrder}
+                  onChange={(event) =>
+                    setCertificationForm((prev) => ({ ...prev, sortOrder: event.target.value }))
+                  }
+                  placeholder="Sort Order"
+                />
+                <FileInput
+                  file={certImageFile}
+                  accept="image/*"
+                  onFileChange={(file) => openCropper("cert-create", file, CROP_PRESETS.certification)}
+                />
+                <button type="submit" disabled={loading || !isSupabaseConfigured}>
+                  <FiPlusCircle size={14} />
+                  <span>Simpan Sertifikat</span>
+                </button>
+              </form>
+            )}
+
+            {createFormType === "category" && (
+              <form className="admin-form" onSubmit={onCreateCategory}>
+                <input
+                  value={categoryForm.name}
+                  onChange={(event) => setCategoryForm((prev) => ({ ...prev, name: event.target.value }))}
+                  placeholder="Nama Category"
+                />
+                <input
+                  value={categoryForm.externalUrl}
+                  onChange={(event) =>
+                    setCategoryForm((prev) => ({ ...prev, externalUrl: event.target.value }))
+                  }
+                  placeholder="External URL (opsional)"
+                />
+                <input
+                  type="number"
+                  value={categoryForm.sortOrder}
+                  onChange={(event) =>
+                    setCategoryForm((prev) => ({ ...prev, sortOrder: event.target.value }))
+                  }
+                  placeholder="Sort Order"
+                />
+                <button type="submit" disabled={loading || !isSupabaseConfigured}>
+                  <FiPlusCircle size={14} />
+                  <span>Simpan Category</span>
+                </button>
+              </form>
+            )}
+
+            {createFormType === "project" && (
+              <form className="admin-form" onSubmit={onCreateProject}>
+                <select
+                  value={projectForm.categoryId}
+                  onChange={(event) =>
+                    setProjectForm((prev) => ({ ...prev, categoryId: event.target.value }))
+                  }
+                >
+                  <option value="">Pilih Category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={projectForm.title}
+                  onChange={(event) => setProjectForm((prev) => ({ ...prev, title: event.target.value }))}
+                  placeholder="Judul Project"
+                />
+                <textarea
+                  value={projectForm.description}
+                  onChange={(event) =>
+                    setProjectForm((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                  placeholder="Deskripsi Project"
+                />
+                <input
+                  value={projectForm.techStack}
+                  onChange={(event) =>
+                    setProjectForm((prev) => ({ ...prev, techStack: event.target.value }))
+                  }
+                  placeholder="Tech Stack (pisahkan dengan koma)"
+                />
+                <input
+                  value={projectForm.repositoryUrl}
+                  onChange={(event) =>
+                    setProjectForm((prev) => ({ ...prev, repositoryUrl: event.target.value }))
+                  }
+                  placeholder="Link Repository"
+                />
+                <input
+                  type="number"
+                  value={projectForm.sortOrder}
+                  onChange={(event) =>
+                    setProjectForm((prev) => ({ ...prev, sortOrder: event.target.value }))
+                  }
+                  placeholder="Sort Order"
+                />
+                <FileInput
+                  file={projectImageFile}
+                  accept="image/*"
+                  onFileChange={(file) => openCropper("project-create", file, CROP_PRESETS.project)}
+                />
+                <button type="submit" disabled={loading || !isSupabaseConfigured}>
+                  <FiPlusCircle size={14} />
+                  <span>Simpan Project</span>
+                </button>
+              </form>
+            )}
+
+            {createFormType === "contact" && (
+              <form className="admin-form" onSubmit={onCreateContact}>
+                <input
+                  value={contactForm.platform}
+                  onChange={(event) => setContactForm((prev) => ({ ...prev, platform: event.target.value }))}
+                  placeholder="Platform"
+                />
+                <input
+                  value={contactForm.label}
+                  onChange={(event) => setContactForm((prev) => ({ ...prev, label: event.target.value }))}
+                  placeholder="Label"
+                />
+                <input
+                  value={contactForm.url}
+                  onChange={(event) => setContactForm((prev) => ({ ...prev, url: event.target.value }))}
+                  placeholder="URL"
+                />
+                <input
+                  type="number"
+                  value={contactForm.sortOrder}
+                  onChange={(event) => setContactForm((prev) => ({ ...prev, sortOrder: event.target.value }))}
+                  placeholder="Sort Order"
+                />
+                <button type="submit" disabled={loading || !isSupabaseConfigured}>
+                  <FiPlusCircle size={14} />
+                  <span>Simpan Contact</span>
+                </button>
+              </form>
+            )}
+          </section>
+        </div>
+      )}
 
       {successMessage && (
         <div className="admin-toast" role="status" aria-live="polite">
