@@ -2531,6 +2531,10 @@ h1 span {
   }
 
   main {
+    padding-top: 0;
+  }
+
+  .section-page:not(.home-section) {
     padding-top: 6rem;
   }
 
