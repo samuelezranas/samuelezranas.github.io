@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import {
   FiArrowDown,
   FiArrowUp,
+  FiBarChart2,
   FiCheck,
   FiChevronLeft,
   FiCoffee,
@@ -117,6 +118,19 @@ const CROP_PRESETS = {
   project: { label: "Project", width: 16, height: 9, outputWidth: 1600 },
 };
 
+const ANALYTICS_RANGE_OPTIONS = [7, 30, 90];
+
+const initialAnalyticsState = {
+  rangeLabel: "",
+  summary: {
+    sessions: 0,
+    users: 0,
+    pageViews: 0,
+  },
+  daily: [],
+  topPages: [],
+};
+
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 function getCropPreviewLayout(cropState) {
@@ -206,6 +220,53 @@ const normalizeTechKey = (value) =>
   String(value || "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
+
+function formatAnalyticsDate(rawDate) {
+  const value = String(rawDate || "");
+  if (!/^\d{8}$/.test(value)) {
+    return value || "-";
+  }
+
+  const year = Number(value.slice(0, 4));
+  const month = Number(value.slice(4, 6)) - 1;
+  const day = Number(value.slice(6, 8));
+  const parsed = new Date(year, month, day);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+function AnalyticsMiniBars({ points }) {
+  const maxValue = Math.max(...points.map((point) => Number(point.value || 0)), 0);
+
+  if (!points.length || maxValue <= 0) {
+    return <p className="admin-ga-empty">Belum ada data trend untuk range ini.</p>;
+  }
+
+  return (
+    <div className="admin-ga-bars" role="img" aria-label="Grafik kunjungan harian Google Analytics">
+      {points.map((point) => {
+        const safeValue = Number(point.value || 0);
+        const height = Math.max(6, Math.round((safeValue / maxValue) * 100));
+        return (
+          <div className="admin-ga-bar-item" key={point.date}>
+            <div
+              className="admin-ga-bar"
+              style={{ height: `${height}%` }}
+              title={`${point.label}: ${safeValue} sesi`}
+            />
+            <span>{point.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function TechStackBadges({ value }) {
   const techItems = String(value || "")
@@ -398,6 +459,10 @@ export default function AdminPage() {
   const [detailDraft, setDetailDraft] = useState(null);
   const [detailImageFile, setDetailImageFile] = useState(null);
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState("");
+  const [analyticsDays, setAnalyticsDays] = useState(30);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState("");
+  const [analyticsData, setAnalyticsData] = useState(initialAnalyticsState);
   const [cropState, setCropState] = useState({
     isOpen: false,
     sourceUrl: "",
@@ -577,6 +642,72 @@ export default function AdminPage() {
 
     loadData();
   }, [isAuthenticated]);
+
+  const loadAnalyticsData = async (days) => {
+    const safeDays = ANALYTICS_RANGE_OPTIONS.includes(Number(days)) ? Number(days) : 30;
+
+    setAnalyticsLoading(true);
+    setAnalyticsError("");
+
+    try {
+      const response = await fetch(`/api/google-analytics?days=${safeDays}`);
+      const rawText = await response.text();
+      let payload = null;
+
+      try {
+        payload = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        throw new Error(
+          "Endpoint analytics belum mengembalikan JSON valid. Cek routing /api di deploy dan konfigurasi env Google Analytics."
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error(payload?.error || "Gagal mengambil data Google Analytics.");
+      }
+
+      setAnalyticsData({
+        rangeLabel: payload?.rangeLabel || `Last ${safeDays} days`,
+        summary: {
+          sessions: Number(payload?.summary?.sessions || 0),
+          users: Number(payload?.summary?.users || 0),
+          pageViews: Number(payload?.summary?.pageViews || 0),
+        },
+        daily: Array.isArray(payload?.daily)
+          ? payload.daily.map((row) => ({
+              date: row.date,
+              label: formatAnalyticsDate(row.date),
+              sessions: Number(row.sessions || 0),
+              users: Number(row.users || 0),
+              pageViews: Number(row.pageViews || 0),
+            }))
+          : [],
+        topPages: Array.isArray(payload?.topPages)
+          ? payload.topPages.map((row) => ({
+              pagePath: row.pagePath || "/",
+              pageViews: Number(row.pageViews || 0),
+            }))
+          : [],
+      });
+    } catch (error) {
+      setAnalyticsError(error?.message || "Gagal mengambil data Google Analytics.");
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated || activeTab !== "Dashboard") {
+      return;
+    }
+
+    loadAnalyticsData(analyticsDays);
+  }, [isAuthenticated, activeTab, analyticsDays]);
+
+  const analyticsBars = useMemo(
+    () => analyticsData.daily.map((row) => ({ date: row.date, label: row.label, value: row.sessions })),
+    [analyticsData.daily]
+  );
 
   useEffect(() => {
     if (!createFormType) {
@@ -1463,14 +1594,86 @@ export default function AdminPage() {
             </nav>
 
             {activeTab === "Dashboard" && (
-              <section className="admin-metric-grid">
-                {dashboardMetrics.map((metric) => (
-                  <article key={metric.label} className="admin-metric">
-                    <h4>{metric.label}</h4>
-                    <p>{metric.value}</p>
-                  </article>
-                ))}
-              </section>
+              <>
+                <section className="admin-card admin-analytics-card">
+                  <div className="admin-card-head">
+                    <h3>
+                      <FiBarChart2 size={16} />
+                      <span>Google Analytics</span>
+                    </h3>
+                    <div className="admin-ga-range-actions">
+                      {ANALYTICS_RANGE_OPTIONS.map((days) => (
+                        <button
+                          key={days}
+                          type="button"
+                          className={analyticsDays === days ? "active" : ""}
+                          onClick={() => setAnalyticsDays(days)}
+                          disabled={analyticsLoading}
+                        >
+                          {days} hari
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="admin-card-note">Sumber: Google Analytics untuk samuelezranas.codes ({analyticsData.rangeLabel}).</p>
+
+                  {analyticsError && <p className="admin-ga-error">{analyticsError}</p>}
+
+                  {!analyticsError && (
+                    <>
+                      <div className="admin-ga-summary-grid">
+                        <article>
+                          <h4>Total Sessions</h4>
+                          <p>{analyticsData.summary.sessions.toLocaleString("id-ID")}</p>
+                        </article>
+                        <article>
+                          <h4>Total Users</h4>
+                          <p>{analyticsData.summary.users.toLocaleString("id-ID")}</p>
+                        </article>
+                        <article>
+                          <h4>Page Views</h4>
+                          <p>{analyticsData.summary.pageViews.toLocaleString("id-ID")}</p>
+                        </article>
+                      </div>
+
+                      <div className="admin-ga-chart-wrap">
+                        <div className="admin-ga-chart-head">
+                          <h4>Trend Sessions Harian</h4>
+                          {analyticsLoading && <span>Memuat...</span>}
+                        </div>
+                        <AnalyticsMiniBars points={analyticsBars} />
+                      </div>
+
+                      <div className="admin-ga-pages-wrap">
+                        <h4>Top Pages</h4>
+                        {analyticsData.topPages.length ? (
+                          <div className="admin-ga-pages-list">
+                            {analyticsData.topPages.map((item) => (
+                              <article key={item.pagePath}>
+                                <p>{item.pagePath}</p>
+                                <strong>{item.pageViews.toLocaleString("id-ID")}</strong>
+                              </article>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="admin-ga-empty">Belum ada data halaman untuk range ini.</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </section>
+
+                <section className="admin-metric-grid">
+                  {dashboardMetrics.map((metric) => (
+                    <article key={metric.label} className="admin-metric">
+                      <h4>{metric.label}</h4>
+                      <p>{metric.value}</p>
+                    </article>
+                  ))}
+                </section>
+
+              </>
             )}
 
             {activeTab === "About" && (
