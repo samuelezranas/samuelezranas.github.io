@@ -88,6 +88,9 @@ const CERTIFICATIONS_PER_PAGE = 6;
 const SPLASH_VISIT_KEY = "samuel-splash-seen";
 const SPLASH_TOTAL_DURATION = 4000;
 const SPLASH_EXIT_DURATION = 1200;
+const IT_LEARNING_START_YEAR = 2021;
+const IT_LEARNING_START_MONTH_INDEX = 8;
+const IT_LEARNING_START_DAY = 1;
 const ABOUT_TITLE = "I\'m Samuel Ezra. Here, I craft digital products with a futuristic mindset.";
 const ABOUT_LEAD =
   "I am an Information Technology undergraduate focused on software engineering, interface design, and visual storytelling. I enjoy building products that are both technically strong and visually memorable. Beyond coding, I care deeply about user flow, visual rhythm, and performance, so every project I build aims to feel smooth, purposeful, and ready for real-world use.";
@@ -862,6 +865,57 @@ export default function App() {
   }, []);
 
   const aboutPhotos = aboutContent.photos?.length ? aboutContent.photos : DEFAULT_ABOUT_PHOTOS;
+  const totalItCertifications = dynamicCertifications.length;
+  const totalWebAndMobileProjects = useMemo(() => {
+    const categoryMatchers = [/web/i, /website/i, /mobile/i, /application/i, /app/i];
+
+    return Object.entries(dynamicPortfolioData).reduce((count, [category, projects]) => {
+      const isTargetCategory = categoryMatchers.some((matcher) => matcher.test(category));
+      if (!isTargetCategory || !Array.isArray(projects)) {
+        return count;
+      }
+      return count + projects.length;
+    }, 0);
+  }, [dynamicPortfolioData]);
+
+  const yearsOfLearning = useMemo(() => {
+    const now = new Date();
+    let years = now.getFullYear() - IT_LEARNING_START_YEAR;
+
+    const isBeforeLearningAnniversary =
+      now.getMonth() < IT_LEARNING_START_MONTH_INDEX ||
+      (now.getMonth() === IT_LEARNING_START_MONTH_INDEX && now.getDate() < IT_LEARNING_START_DAY);
+
+    if (isBeforeLearningAnniversary) {
+      years -= 1;
+    }
+
+    return Math.max(0, years);
+  }, []);
+
+  const aboutVisualData = [
+    {
+      id: "about-projects",
+      Icon: FiCode,
+      value: totalWebAndMobileProjects,
+      title: "Total Projects",
+      subtitle: "IT web/mobile projects",
+    },
+    {
+      id: "about-certs",
+      Icon: FiFileText,
+      value: totalItCertifications,
+      title: "Certificates",
+      subtitle: "IT certifications",
+    },
+    {
+      id: "about-learning-years",
+      Icon: FiMonitor,
+      value: yearsOfLearning,
+      title: "Years of Learning",
+      subtitle: "IT journey since Sep 2021",
+    },
+  ];
 
   useEffect(() => {
     if (aboutPhotoIndex >= aboutPhotos.length) {
@@ -1449,56 +1503,71 @@ export default function App() {
         </section>
 
         <section id="about" className="section-page" ref={aboutSectionRef}>
-          <div className="section-panel intro-layout">
-            <div>
-              <p className="eyebrow">
-                <HiOutlineSparkles /> About me
-              </p>
-              <h1 className="animated-subtitle about-title-dynamic">{aboutContent.title}</h1>
-              <p className="lead">{aboutContent.lead}</p>
-              <div className="quick-links">
-                <a
-                  href={aboutContent.resumeUrl || RESUME_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="resume-cta"
+          <div className="section-panel about-section-panel">
+            <div className="intro-layout">
+              <div>
+                <p className="eyebrow">
+                  <HiOutlineSparkles /> About me
+                </p>
+                <h1 className="animated-subtitle about-title-dynamic">{aboutContent.title}</h1>
+                <p className="lead">{aboutContent.lead}</p>
+                <div className="quick-links">
+                  <a
+                    href={aboutContent.resumeUrl || RESUME_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="resume-cta"
+                  >
+                    <FiFileText /> My Resume
+                  </a>
+                </div>
+              </div>
+
+              <div className="about-photo-stack">
+                <div
+                  className={`about-photo-stage${isAboutDragging ? " is-grabbing" : ""}`}
+                  onPointerDown={handleAboutPointerDown}
+                  onPointerMove={handleAboutPointerMove}
+                  onPointerUp={handleAboutPointerUp}
+                  onPointerCancel={handleAboutPointerCancel}
+                  onDragStart={preventNativeAboutDrag}
                 >
-                  <FiFileText /> My Resume
-                </a>
+                  {aboutPhotos.slice(0, 3).map((_, layerIndex) => {
+                    const photo = aboutPhotos[(aboutPhotoIndex + layerIndex) % aboutPhotos.length];
+                    return (
+                      <figure
+                        key={`${photo.id}-${layerIndex}`}
+                        className={`about-photo-layer layer-${layerIndex}${
+                          layerIndex === 0 && isAboutSwipeAnimating
+                            ? ` swipe-${aboutSwipeDirection}`
+                            : ""
+                        }`}
+                        style={layerIndex === 0 ? topCardSwipeStyle : undefined}
+                      >
+                        <img
+                          src={photo.image}
+                          alt={`About visual ${layerIndex + 1}`}
+                          draggable={false}
+                          onDragStart={preventNativeAboutDrag}
+                        />
+                      </figure>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            <div className="about-photo-stack">
-              <div
-                className={`about-photo-stage${isAboutDragging ? " is-grabbing" : ""}`}
-                onPointerDown={handleAboutPointerDown}
-                onPointerMove={handleAboutPointerMove}
-                onPointerUp={handleAboutPointerUp}
-                onPointerCancel={handleAboutPointerCancel}
-                onDragStart={preventNativeAboutDrag}
-              >
-                {aboutPhotos.slice(0, 3).map((_, layerIndex) => {
-                  const photo = aboutPhotos[(aboutPhotoIndex + layerIndex) % aboutPhotos.length];
-                  return (
-                    <figure
-                      key={`${photo.id}-${layerIndex}`}
-                      className={`about-photo-layer layer-${layerIndex}${
-                        layerIndex === 0 && isAboutSwipeAnimating
-                          ? ` swipe-${aboutSwipeDirection}`
-                          : ""
-                      }`}
-                      style={layerIndex === 0 ? topCardSwipeStyle : undefined}
-                    >
-                      <img
-                        src={photo.image}
-                        alt={`About visual ${layerIndex + 1}`}
-                        draggable={false}
-                        onDragStart={preventNativeAboutDrag}
-                      />
-                    </figure>
-                  );
-                })}
-              </div>
+            <div className="about-visual-grid" aria-label="About IT visual data">
+              {aboutVisualData.map((item) => (
+                <article key={item.id} className="about-visual-card">
+                  <span className="about-visual-icon" aria-hidden="true">
+                    <item.Icon />
+                  </span>
+                  <p className="about-visual-value">{item.value}</p>
+                  <p className="about-visual-title">{item.title}</p>
+                  <p className="about-visual-subtitle">{item.subtitle}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
