@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiArrowLeft,
   FiArrowRight,
+  FiArrowUpRight,
   FiBox,
   FiCode,
   FiCpu,
@@ -900,6 +901,7 @@ export default function App() {
       value: totalWebAndMobileProjects,
       title: "Total Projects",
       subtitle: "IT web/mobile projects",
+      href: "#portfolio",
     },
     {
       id: "about-certs",
@@ -907,6 +909,7 @@ export default function App() {
       value: totalItCertifications,
       title: "Certificates",
       subtitle: "IT certifications",
+      href: "#certification",
     },
     {
       id: "about-learning-years",
@@ -914,6 +917,7 @@ export default function App() {
       value: yearsOfLearning,
       title: "Years of Learning",
       subtitle: "IT journey since Sep 2021",
+      href: "#contact",
     },
   ];
 
@@ -1520,6 +1524,9 @@ export default function App() {
                   >
                     <FiFileText /> My Resume
                   </a>
+                  <a href="#contact" className="connect-cta">
+                    <FiSend /> <span className="connect-cta-label">Connect me</span>
+                  </a>
                 </div>
               </div>
 
@@ -1559,14 +1566,19 @@ export default function App() {
 
             <div className="about-visual-grid" aria-label="About IT visual data">
               {aboutVisualData.map((item) => (
-                <article key={item.id} className="about-visual-card">
+                <a key={item.id} href={item.href} className="about-visual-card">
                   <span className="about-visual-icon" aria-hidden="true">
                     <item.Icon />
                   </span>
+                  <span className="about-visual-arrow" aria-hidden="true">
+                    <FiArrowUpRight />
+                  </span>
                   <p className="about-visual-value">{item.value}</p>
-                  <p className="about-visual-title">{item.title}</p>
-                  <p className="about-visual-subtitle">{item.subtitle}</p>
-                </article>
+                  <div className="about-visual-copy">
+                    <p className="about-visual-title">{item.title}</p>
+                    <p className="about-visual-subtitle">{item.subtitle}</p>
+                  </div>
+                </a>
               ))}
             </div>
           </div>
