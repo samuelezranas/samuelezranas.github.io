@@ -949,7 +949,9 @@ h1 span {
   grid-area: icon;
   justify-self: start;
   align-self: start;
+  transform-origin: top left;
   transform: translateY(-3px);
+  transition: transform 240ms ease, box-shadow 240ms ease;
 }
 
 .about-visual-icon svg {
@@ -962,7 +964,7 @@ h1 span {
   align-self: start;
   color: #a39aad;
   line-height: 1;
-  transform: rotate(0deg);
+  transform: rotate(45deg);
   transition: transform 240ms ease, color 220ms ease;
 }
 
@@ -1010,11 +1012,12 @@ h1 span {
 }
 
 .about-visual-card:hover .about-visual-icon {
-  transform: translateY(-3px);
+  transform: translateY(-3px) scale(1.15);
+  box-shadow: 0 4px 12px rgba(255, 96, 183, 0.4);
 }
 
 .about-visual-card:hover .about-visual-arrow {
-  transform: rotate(45deg);
+  transform: rotate(0deg);
   color: #c5bdce;
 }
 

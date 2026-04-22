@@ -900,7 +900,7 @@ export default function App() {
       Icon: FiCode,
       value: totalWebAndMobileProjects,
       title: "Total Projects",
-      subtitle: "IT web/mobile projects",
+      subtitle: "The web/mobile projects",
       href: "#portfolio",
     },
     {
@@ -908,7 +908,7 @@ export default function App() {
       Icon: FiFileText,
       value: totalItCertifications,
       title: "Certificates",
-      subtitle: "IT certifications",
+      subtitle: "Attended certifications and courses",
       href: "#certification",
     },
     {
@@ -916,7 +916,7 @@ export default function App() {
       Icon: FiMonitor,
       value: yearsOfLearning,
       title: "Years of Learning",
-      subtitle: "IT journey since Sep 2021",
+      subtitle: "My years of experiences",
       href: "#contact",
     },
   ];
