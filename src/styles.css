@@ -964,7 +964,7 @@ h1 span {
   align-self: start;
   color: #a39aad;
   line-height: 1;
-  transform: rotate(45deg);
+  transform: rotate(0deg);
   transition: transform 240ms ease, color 220ms ease;
 }
 
@@ -1017,7 +1017,7 @@ h1 span {
 }
 
 .about-visual-card:hover .about-visual-arrow {
-  transform: rotate(0deg);
+  transform: rotate(45deg);
   color: #c5bdce;
 }
 
