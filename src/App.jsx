@@ -1567,7 +1567,19 @@ export default function App() {
 
             <div className="about-visual-grid" aria-label="About IT visual data">
               {aboutVisualData.map((item) => (
-                <a key={item.id} href={item.href} className="about-visual-card">
+                <a 
+                  key={item.id} 
+                  href={item.href} 
+                  className="about-visual-card"
+                  onClick={(e) => {
+                    const targetId = item.href.replace('#', '');
+                    const targetElem = document.getElementById(targetId);
+                    if (targetElem) {
+                      e.preventDefault();
+                      smoothSnapToSection(targetElem);
+                    }
+                  }}
+                >
                   <span className="about-visual-icon" aria-hidden="true">
                     <item.Icon />
                   </span>
