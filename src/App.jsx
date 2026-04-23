@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiArrowLeft,
@@ -479,7 +480,7 @@ export default function App() {
   }, [isPortfolioExpanded]);
 
   useEffect(() => {
-    const hasShownSplash = !import.meta.env.DEV && window.sessionStorage.getItem(SPLASH_VISIT_KEY) === "1";
+    const hasShownSplash = !(process.env.NODE_ENV !== "production") && window.sessionStorage.getItem(SPLASH_VISIT_KEY) === "1";
     if (hasShownSplash) {
       setSplashProgress(100);
       setIsSplashVisible(false);
@@ -2062,3 +2063,4 @@ export default function App() {
     </div>
   );
 }
+

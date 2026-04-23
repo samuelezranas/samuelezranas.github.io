@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useId, useMemo, useState } from "react";
 import {
   FiArrowDown,
@@ -423,7 +424,10 @@ function mapDetailDraft(type, item) {
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return window.sessionStorage.getItem(ADMIN_AUTH_STORAGE_KEY) === "true";
+    if (typeof window !== "undefined") {
+      return window.sessionStorage.getItem(ADMIN_AUTH_STORAGE_KEY) === "true";
+    }
+    return false;
   });
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -2329,3 +2333,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
