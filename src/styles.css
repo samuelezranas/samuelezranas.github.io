@@ -722,6 +722,7 @@ main {
   grid-template-columns: 1.25fr 1fr;
   gap: 1.2rem;
   align-items: center;
+  margin-bottom: 0.15rem;
 }
 
 .eyebrow {
@@ -906,7 +907,7 @@ h1 span {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
-  margin-top: 0.5rem;
+  margin-top: 2.5rem;
 }
 
 .about-visual-card {
@@ -2599,6 +2600,37 @@ h1 span {
     grid-template-columns: 1fr;
   }
 
+  .about-section-panel .intro-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .intro-layout .lead {
+    text-align: justify;
+    text-justify: inter-word;
+    text-align-last: left;
+    hyphens: auto;
+    overflow-wrap: break-word;
+    line-height: 1.62;
+    font-size: 1.04rem;
+    margin-right: 0;
+  }
+
+  .about-section-panel .quick-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .about-section-panel .quick-links a {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding-inline: 0.9rem !important;
+  }
+
   .topbar {
     border-radius: 20px;
     align-items: center;
@@ -2747,11 +2779,15 @@ h1 span {
   .about-photo-stack,
   .about-photo-stage {
     min-height: 0;
+    aspect-ratio: 4 / 3;
   }
 
   .about-photo-stack {
-    width: min(100%, 320px);
+    width: 100%;
+    max-width: 100%;
     margin-inline: auto;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
   }
 
   .about-section-panel .intro-layout > :first-child,
@@ -2817,6 +2853,15 @@ h1 span {
 }
 
 @media (max-width: 600px) {
+  .intro-layout .lead {
+    font-size: 0.98rem;
+    line-height: 1.58;
+  }
+
+  .about-section-panel .quick-links {
+    grid-template-columns: 1fr;
+  }
+
   .certification-grid {
     grid-template-columns: 1fr;
   }
@@ -2917,11 +2962,15 @@ h1 span {
   .about-photo-stack,
   .about-photo-stage {
     min-height: 0;
+    aspect-ratio: 4 / 3;
   }
 
   .about-photo-stack {
-    width: min(100%, 320px);
+    width: 100%;
+    max-width: 100%;
     margin-inline: auto;
+    margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
   }
 
   .about-visual-grid {
