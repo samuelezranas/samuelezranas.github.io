@@ -2142,7 +2142,17 @@ export default function App() {
         <footer className="site-footer">
           <h3>"Keep Moving Forward!"</h3>
           <p className="footer-quote-source"><em>- Disney: Meet the Robinsons</em></p>
-          <p className="footer-copyright">© 2025 Samuel Ezra Sirait. All Rights Reserved.</p>
+          <p className="footer-copyright">
+            © 2025 Samuel Ezra Sirait.
+            {isMobileViewport ? (
+              <>
+                <br />
+                All Rights Reserved.
+              </>
+            ) : (
+              " All Rights Reserved."
+            )}
+          </p>
           <div className="footer-socials">
             {footerSocialLinks.map((item) => {
               const FooterIcon = item.Icon;
