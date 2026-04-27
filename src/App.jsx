@@ -393,6 +393,7 @@ export default function App() {
   const [isSendingContactMessage, setIsSendingContactMessage] = useState(false);
   const [certificationPage, setCertificationPage] = useState(0);
   const [activeCertification, setActiveCertification] = useState(null);
+  const [isCertificationListOpen, setIsCertificationListOpen] = useState(false);
   const [aboutPhotoIndex, setAboutPhotoIndex] = useState(0);
   const [aboutSwipeDirection, setAboutSwipeDirection] = useState("right");
   const [isAboutSwipeAnimating, setIsAboutSwipeAnimating] = useState(false);
@@ -1115,6 +1116,12 @@ export default function App() {
     }
   }, [certificationPage, dynamicCertifications.length]);
 
+  useEffect(() => {
+    if (!isMobileViewport) {
+      setIsCertificationListOpen(false);
+    }
+  }, [isMobileViewport]);
+
   const currentProjects = dynamicPortfolioData[activeCategory] || [];
   const visibleProjectLimit = 2;
   const hasMoreProjects = currentProjects.length > visibleProjectLimit;
@@ -1144,6 +1151,13 @@ export default function App() {
       isPlaceholder: true,
     };
   });
+  const certificationsSortedByLatest = [...dynamicCertifications].sort((a, b) => {
+    const yearA = Number.parseInt(a.year, 10) || 0;
+    const yearB = Number.parseInt(b.year, 10) || 0;
+    return yearB - yearA;
+  });
+  const mobileCertificationPreview = certificationsSortedByLatest.slice(0, 3);
+  const hasMoreMobileCertifications = certificationsSortedByLatest.length > 3;
   const detailProjectSequence = ["Website", "Application"].flatMap((category) =>
     (dynamicPortfolioData[category] || []).map((project) => ({ category, project }))
   );
@@ -1642,95 +1656,138 @@ export default function App() {
               Selected certificates from my learning track. Hover for motion details and click to open full preview.
             </p>
 
-            <div className="certification-grid" key={`cert-page-${certificationPage}`}>
-              {certificationsInView.map((certification) => (
-                <article
-                  key={certification.id}
-                  className={`cert-card ${certification.isPlaceholder ? "placeholder" : ""}`}
-                  onClick={() => {
-                    if (!certification.isPlaceholder) {
-                      setActiveCertification(certification);
-                    }
-                  }}
-                  role={certification.isPlaceholder ? undefined : "button"}
-                  tabIndex={certification.isPlaceholder ? -1 : 0}
-                  onKeyDown={(event) => {
-                    if (certification.isPlaceholder) {
-                      return;
-                    }
-
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setActiveCertification(certification);
-                    }
-                  }}
-                >
-                  {certification.isPlaceholder ? (
-                    <>
-                      <div className="cert-thumb-wrap cert-skeleton-block">
-                        <div className="cert-thumb" aria-hidden="true" />
-                        <span className="cert-thumb-hover-label" aria-hidden="true">Not Yet</span>
-                      </div>
-                      <div className="cert-title-slot" aria-hidden="true">
-                        <div className="cert-skeleton-title" />
-                        <p className="cert-placeholder-title">No Certificate Detected</p>
-                      </div>
-                      <div className="cert-skeleton-line" aria-hidden="true" />
-                      <div className="cert-year-slot" aria-hidden="true">
-                        <span className="cert-skeleton-pill" />
-                        <span className="cert-skeleton-year">20XX</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
+            {isMobileViewport ? (
+              <>
+                <div className="certification-grid certification-grid-mobile-preview">
+                  {mobileCertificationPreview.map((certification) => (
+                    <article
+                      key={`mobile-cert-preview-${certification.id}`}
+                      className="cert-card"
+                      onClick={() => setActiveCertification(certification)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setActiveCertification(certification);
+                        }
+                      }}
+                    >
                       <div className="cert-thumb-wrap">
                         <img src={certification.image} alt={certification.title} className="cert-thumb" />
                       </div>
                       <h4>{certification.title}</h4>
                       <p>{certification.issuer}</p>
                       <span>{certification.year}</span>
-                    </>
-                  )}
-                </article>
-              ))}
-            </div>
-
-            {certificationPageCount > 1 && (
-              <div className="cert-pagination">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCertificationPage((prev) =>
-                      prev === 0 ? certificationPageCount - 1 : prev - 1
-                    )
-                  }
-                  aria-label="Previous certification page"
-                >
-                  <FiArrowLeft />
-                </button>
-                <div className="cert-dots" aria-label="Certification pages">
-                  {Array.from({ length: certificationPageCount }, (_, index) => (
-                    <button
-                      key={`cert-page-dot-${index}`}
-                      type="button"
-                      className={index === certificationPage ? "active" : ""}
-                      onClick={() => setCertificationPage(index)}
-                      aria-label={`Go to certification page ${index + 1}`}
-                    />
+                    </article>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCertificationPage((prev) =>
-                      prev === certificationPageCount - 1 ? 0 : prev + 1
-                    )
-                  }
-                  aria-label="Next certification page"
-                >
-                  <FiArrowRight />
-                </button>
-              </div>
+
+                {hasMoreMobileCertifications && (
+                  <div className="cert-mobile-more-wrap">
+                    <button
+                      type="button"
+                      className="cert-mobile-more-btn"
+                      onClick={() => setIsCertificationListOpen(true)}
+                    >
+                      Show More
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="certification-grid" key={`cert-page-${certificationPage}`}>
+                  {certificationsInView.map((certification) => (
+                    <article
+                      key={certification.id}
+                      className={`cert-card ${certification.isPlaceholder ? "placeholder" : ""}`}
+                      onClick={() => {
+                        if (!certification.isPlaceholder) {
+                          setActiveCertification(certification);
+                        }
+                      }}
+                      role={certification.isPlaceholder ? undefined : "button"}
+                      tabIndex={certification.isPlaceholder ? -1 : 0}
+                      onKeyDown={(event) => {
+                        if (certification.isPlaceholder) {
+                          return;
+                        }
+
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setActiveCertification(certification);
+                        }
+                      }}
+                    >
+                      {certification.isPlaceholder ? (
+                        <>
+                          <div className="cert-thumb-wrap cert-skeleton-block">
+                            <div className="cert-thumb" aria-hidden="true" />
+                            <span className="cert-thumb-hover-label" aria-hidden="true">Not Yet</span>
+                          </div>
+                          <div className="cert-title-slot" aria-hidden="true">
+                            <div className="cert-skeleton-title" />
+                            <p className="cert-placeholder-title">No Certificate Detected</p>
+                          </div>
+                          <div className="cert-skeleton-line" aria-hidden="true" />
+                          <div className="cert-year-slot" aria-hidden="true">
+                            <span className="cert-skeleton-pill" />
+                            <span className="cert-skeleton-year">20XX</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="cert-thumb-wrap">
+                            <img src={certification.image} alt={certification.title} className="cert-thumb" />
+                          </div>
+                          <h4>{certification.title}</h4>
+                          <p>{certification.issuer}</p>
+                          <span>{certification.year}</span>
+                        </>
+                      )}
+                    </article>
+                  ))}
+                </div>
+
+                {certificationPageCount > 1 && (
+                  <div className="cert-pagination">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCertificationPage((prev) =>
+                          prev === 0 ? certificationPageCount - 1 : prev - 1
+                        )
+                      }
+                      aria-label="Previous certification page"
+                    >
+                      <FiArrowLeft />
+                    </button>
+                    <div className="cert-dots" aria-label="Certification pages">
+                      {Array.from({ length: certificationPageCount }, (_, index) => (
+                        <button
+                          key={`cert-page-dot-${index}`}
+                          type="button"
+                          className={index === certificationPage ? "active" : ""}
+                          onClick={() => setCertificationPage(index)}
+                          aria-label={`Go to certification page ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCertificationPage((prev) =>
+                          prev === certificationPageCount - 1 ? 0 : prev + 1
+                        )
+                      }
+                      aria-label="Next certification page"
+                    >
+                      <FiArrowRight />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
@@ -1987,6 +2044,65 @@ export default function App() {
           </div>
         </section>
 
+        {isCertificationListOpen && (
+          <div
+            className="cert-list-overlay"
+            role="presentation"
+            onClick={() => setIsCertificationListOpen(false)}
+          >
+            <article
+              className="cert-list-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="All certifications"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="cert-list-modal-head">
+                <h3>All Certifications</h3>
+                <button
+                  type="button"
+                  className="cert-list-close"
+                  onClick={() => setIsCertificationListOpen(false)}
+                  aria-label="Close certifications list"
+                >
+                  <FiX />
+                </button>
+              </div>
+
+              <div className="cert-list-modal-body">
+                <div className="certification-grid certification-grid-mobile-all">
+                  {certificationsSortedByLatest.map((certification) => (
+                    <article
+                      key={`mobile-cert-all-${certification.id}`}
+                      className="cert-card"
+                      onClick={() => {
+                        setIsCertificationListOpen(false);
+                        setActiveCertification(certification);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setIsCertificationListOpen(false);
+                          setActiveCertification(certification);
+                        }
+                      }}
+                    >
+                      <div className="cert-thumb-wrap">
+                        <img src={certification.image} alt={certification.title} className="cert-thumb" />
+                      </div>
+                      <h4>{certification.title}</h4>
+                      <p>{certification.issuer}</p>
+                      <span>{certification.year}</span>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </article>
+          </div>
+        )}
+
         {activeCertification && (
           <div
             className="cert-modal-overlay"
@@ -2039,7 +2155,17 @@ export default function App() {
         <footer className="site-footer">
           <h3>"Keep Moving Forward!"</h3>
           <p className="footer-quote-source"><em>- Disney: Meet the Robinsons</em></p>
-          <p className="footer-copyright">© 2025 Samuel Ezra Sirait. All Rights Reserved.</p>
+          <p className="footer-copyright">
+            © 2025 Samuel Ezra Sirait.
+            {isMobileViewport ? (
+              <>
+                <br />
+                All Rights Reserved.
+              </>
+            ) : (
+              " All Rights Reserved."
+            )}
+          </p>
           <div className="footer-socials">
             {footerSocialLinks.map((item) => {
               const FooterIcon = item.Icon;
