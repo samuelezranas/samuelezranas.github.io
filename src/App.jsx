@@ -68,6 +68,7 @@ import {
   SiVuedotjs,
 } from "react-icons/si";
 import Antigravity from "./components/Antigravity";
+import SpotifyMiniPlayer from "./components/SpotifyMiniPlayer";
 import { createContactMessage, fetchPublicWebsiteData } from "./lib/siteApi";
 import { isSupabaseConfigured } from "./lib/supabaseClient";
 
@@ -2185,6 +2186,7 @@ export default function App() {
           />
         ))}
       </div>
+      <SpotifyMiniPlayer />
     </div>
   );
 }
