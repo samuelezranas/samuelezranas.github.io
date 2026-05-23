@@ -69,7 +69,43 @@ import {
   upsertAboutSettings,
 } from "../lib/siteApi";
 import { isSupabaseConfigured, supabaseConnectionInfo } from "../lib/supabaseClient";
+import { TECH_STACK_META, normalizeTechStackKey } from "../App";
 import "./admin.css";
+
+const TechStackIndicators = ({ techStackString }) => {
+  if (!techStackString) return null;
+  const items = String(techStackString).split(",").map((s) => s.trim()).filter(Boolean);
+  if (items.length === 0) return null;
+  
+  return (
+    <div style={{ display: "flex", gap: "8px", marginTop: "-8px", marginBottom: "12px", flexWrap: "wrap" }}>
+      {items.map((item, idx) => {
+        const normalized = normalizeTechStackKey(item);
+        const meta = TECH_STACK_META[normalized];
+        const isFound = !!meta;
+        return (
+          <span
+            key={idx}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "12px",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              backgroundColor: isFound ? "rgba(46, 204, 113, 0.1)" : "rgba(231, 76, 60, 0.1)",
+              color: isFound ? "#2ecc71" : "#e74c3c",
+              border: `1px solid ${isFound ? "rgba(46, 204, 113, 0.3)" : "rgba(231, 76, 60, 0.3)"}`,
+            }}
+          >
+            {isFound && meta.Icon ? <meta.Icon size={12} color={meta.color || "inherit"} /> : null}
+            {item} {isFound ? "(Ada Logo)" : "(Logo Tidak Tersedia)"}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
 
 const TABS = ["Dashboard", "About", "Certification", "Portfolio", "Contact"];
 const ADMIN_USERNAME = "admin";
@@ -1491,6 +1527,7 @@ export default function AdminPage() {
                         }
                         placeholder="Tech Stack"
                       />
+                      <TechStackIndicators techStackString={detailDraft.tech_stack} />
                       <input
                         value={detailDraft.repository_url}
                         onChange={(event) =>
@@ -2152,6 +2189,7 @@ export default function AdminPage() {
                   }
                   placeholder="Tech Stack (pisahkan dengan koma)"
                 />
+                <TechStackIndicators techStackString={projectForm.techStack} />
                 <input
                   value={projectForm.repositoryUrl}
                   onChange={(event) =>

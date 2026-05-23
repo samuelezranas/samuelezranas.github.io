@@ -66,6 +66,8 @@ import {
   SiStreamlit,
   SiHuggingface,
   SiVuedotjs,
+  SiTailwindcss,
+  SiNextdotjs,
 } from "react-icons/si";
 import Antigravity from "./components/Antigravity";
 import SpotifyPlayer from "./components/SpotifyMiniPlayer";
@@ -74,14 +76,18 @@ import { isSupabaseConfigured } from "./lib/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
 
 const HOME_TRANSLATIONS = [
-  "Hello, World!",
-  "Halo, Dunia!",
-  "Bonjour, le monde!",
-  "Hola, Mundo!",
-  "Hallo, Welt!",
-  "Konnichiwa, Sekai!",
-  "Namaste, Duniya!",
-  "Salam, Dunia!",
+  "Hello, World!",           // USA / UK (Global English)
+  "Halo, Dunia! 🇮🇩",           // Indonesia
+  "Bonjour, le monde! 🇫🇷",     // Prancis
+  "Hola, Mundo! 🇪🇸",           // Spanyol
+  "Ni Hao, Shijie! 🇨🇳",         // Cina
+  "Privet, Mir! 🇷🇺",            // Rusia
+  "Olá, Mundo! 🇧🇷",             // Brasil
+  "Pryvit, Svite! 🇺🇦",          // Ukraina
+  "Hallo, Welt! 🇩🇪",           // Jerman
+  "Konnichiwa, Sekai! 🇯🇵",     // Jepang
+  "Namaste, Duniya! 🇮🇳",       // India
+  "Salam, Dunia! 🇲🇾",           // Malaysia / Serumpun
 ];
 
 const ENCRYPT_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/\\[]{}@#$%&*";
@@ -237,7 +243,7 @@ const portfolioLinks = {
   Photography: "https://samuelezranas.my.canva.site/portofolio",
 };
 
-const TECH_STACK_META = {
+export const TECH_STACK_META = {
   html: { Icon: SiHtml5, url: "https://developer.mozilla.org/en-US/docs/Web/HTML", color: "#e34f26" },
   css: { Icon: FaCss3Alt, url: "https://developer.mozilla.org/en-US/docs/Web/CSS", color: "#1572b6" },
   javascript: { Icon: SiJavascript, url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript", color: "#f7df1e" },
@@ -269,6 +275,9 @@ const TECH_STACK_META = {
   hapijs: { Icon: SiNodedotjs, url: "https://hapi.dev/", color: "#5fa04e" },
   streamlit: { Icon: SiStreamlit, url: "https://streamlit.io/", color: "#ff4b4b" },
   huggingface: { Icon: SiHuggingface, url: "https://huggingface.co/", color: "#ffd21e" },
+  nextjs: { Icon: SiNextdotjs, url: "https://nextjs.org/", color: "#ffffff" },
+  tailwindcss: { Icon: SiTailwindcss, url: "https://tailwindcss.com/", color: "#38b2ac" },
+  react: { Icon: SiReact, url: "https://reactjs.org/", color: "#61dafb" },
   geolocation: {
     Icon: PiPlanetBold,
     url: "https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API",
@@ -276,7 +285,7 @@ const TECH_STACK_META = {
   },
 };
 
-const normalizeTechStackKey = (value) =>
+export const normalizeTechStackKey = (value) =>
   String(value || "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
@@ -2150,7 +2159,17 @@ export default function App() {
         <footer className="site-footer">
           <h3>"Keep Moving Forward!"</h3>
           <p className="footer-quote-source"><em>- Disney: Meet the Robinsons</em></p>
-          <p className="footer-copyright">© 2025 Samuel Ezra Sirait. All Rights Reserved.</p>
+          <p className="footer-copyright">
+            © 2025 Samuel Ezra Sirait.
+            {isMobileViewport ? (
+              <>
+                <br />
+                All Rights Reserved.
+              </>
+            ) : (
+              " All Rights Reserved."
+            )}
+          </p>
           <div className="footer-socials">
             {footerSocialLinks.map((item) => {
               const FooterIcon = item.Icon;
