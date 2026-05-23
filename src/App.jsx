@@ -71,6 +71,7 @@ import Antigravity from "./components/Antigravity";
 import SpotifyPlayer from "./components/SpotifyMiniPlayer";
 import { createContactMessage, fetchPublicWebsiteData } from "./lib/siteApi";
 import { isSupabaseConfigured } from "./lib/supabaseClient";
+import { motion, AnimatePresence } from "framer-motion";
 
 const HOME_TRANSLATIONS = [
   "Hello, World!",
@@ -1334,6 +1335,12 @@ export default function App() {
     };
 
     const updateTrail = () => {
+      // Jika sedang snap scroll, hentikan trail agar tidak berat
+      if (scrollSnapLockedRef.current) {
+        rocketTrailFrameRef.current = window.requestAnimationFrame(updateTrail);
+        return;
+      }
+
       const now = performance.now();
       const trailPoints = rocketTrailPointsRef.current.filter(
         (point) => now - point.time <= TRAIL_DURATION_MS
@@ -2186,7 +2193,9 @@ export default function App() {
           />
         ))}
       </div>
-      <SpotifyPlayer />
+      <div style={{ opacity: splashProgress > 50 ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}>
+        <SpotifyPlayer />
+      </div>
     </div>
   );
 }
