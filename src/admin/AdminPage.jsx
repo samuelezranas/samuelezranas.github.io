@@ -68,7 +68,7 @@ import {
   uploadAsset,
   upsertAboutSettings,
 } from "../lib/siteApi";
-import { isSupabaseConfigured, supabaseConnectionInfo } from "../lib/supabaseClient";
+import { isSupabaseConfigured, supabaseConnectionInfo, supabase } from "../lib/supabaseClient";
 import { TECH_STACK_META, normalizeTechStackKey } from "../App";
 import "./admin.css";
 
@@ -464,6 +464,8 @@ export default function AdminPage() {
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [loginStep, setLoginStep] = useState(1);
+  const [pinCode, setPinCode] = useState("");
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [loading, setLoading] = useState(false);
@@ -1114,22 +1116,62 @@ export default function AdminPage() {
     }, "Contact link berhasil ditambahkan.");
   };
 
-  const handleLoginSubmit = (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault();
-
-    const isValidCredential =
-      loginUsername.trim() === ADMIN_USERNAME && loginPassword === ADMIN_PASSWORD;
-
-    if (!isValidCredential) {
-      setLoginError("Username atau password salah.");
-      return;
-    }
-
-    window.sessionStorage.setItem(ADMIN_AUTH_STORAGE_KEY, "true");
-    setIsAuthenticated(true);
     setLoginError("");
-    setLoginUsername("");
-    setLoginPassword("");
+
+    try {
+      if (loginStep === 1) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: loginUsername,
+          password: loginPassword,
+        });
+
+        if (signInError) throw signInError;
+
+        const { data: { currentLevel, nextLevel } = {}, error: mfaError } =
+          await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+        if (mfaError) throw mfaError;
+
+        if (nextLevel === "aal2" && nextLevel !== currentLevel) {
+          setLoginStep(2);
+        } else {
+          window.sessionStorage.setItem(ADMIN_AUTH_STORAGE_KEY, "true");
+          setIsAuthenticated(true);
+          setLoginUsername("");
+          setLoginPassword("");
+        }
+      } else if (loginStep === 2) {
+        const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+        if (listError) throw listError;
+
+        const totpFactor = factors.totp[0];
+        if (!totpFactor) throw new Error("No TOTP factor found");
+
+        const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+          factorId: totpFactor.id,
+        });
+        if (challengeError) throw challengeError;
+
+        const { error: verifyError } = await supabase.auth.mfa.verify({
+          factorId: totpFactor.id,
+          challengeId: challenge.id,
+          code: pinCode,
+        });
+
+        if (verifyError) throw verifyError;
+
+        window.sessionStorage.setItem(ADMIN_AUTH_STORAGE_KEY, "true");
+        setIsAuthenticated(true);
+        setLoginUsername("");
+        setLoginPassword("");
+        setPinCode("");
+        setLoginStep(1);
+      }
+    } catch (error) {
+      setLoginError(error.message || "Gagal melakukan login.");
+    }
   };
 
   const handleLogout = () => {
@@ -1145,19 +1187,52 @@ export default function AdminPage() {
           <h1>Admin Login</h1>
           <p>Masuk untuk mengakses dashboard website.</p>
           <form className="admin-form" onSubmit={handleLoginSubmit}>
-            <input
-              type="text"
-              placeholder="Username"
-              value={loginUsername}
-              onChange={(event) => setLoginUsername(event.target.value)}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={loginPassword}
-              onChange={(event) => setLoginPassword(event.target.value)}
-            />
-            <button type="submit">Login</button>
+            {loginStep === 1 && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Email"
+                  value={loginUsername}
+                  onChange={(event) => setLoginUsername(event.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={loginPassword}
+                  onChange={(event) => setLoginPassword(event.target.value)}
+                />
+                <button type="submit">Login</button>
+              </>
+            )}
+            {loginStep === 2 && (
+              <>
+                <input
+                  type="text"
+                  placeholder="6-digit PIN"
+                  value={pinCode}
+                  onChange={(event) => setPinCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                  maxLength={6}
+                  style={{ textAlign: "center", letterSpacing: "4px", fontSize: "1.2rem" }}
+                />
+                <button type="submit">Verify PIN</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginStep(1);
+                    setPinCode("");
+                    setLoginError("");
+                    setLoginPassword("");
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    marginTop: "8px"
+                  }}
+                >
+                  Back to Login
+                </button>
+              </>
+            )}
           </form>
           {loginError && <div className="admin-alert">{loginError}</div>}
           <a className="admin-back-link" href="/">
