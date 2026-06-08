@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import {
+  FiAlertCircle,
   FiArrowDown,
   FiArrowUp,
   FiBarChart2,
@@ -1180,6 +1181,15 @@ export default function AdminPage() {
     setActiveTab("Dashboard");
   };
 
+  useEffect(() => {
+    if (loginError) {
+      const timer = setTimeout(() => {
+        setLoginError("");
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [loginError]);
+
   if (!isAuthenticated) {
     return (
       <div className="admin-shell">
@@ -1234,7 +1244,12 @@ export default function AdminPage() {
               </>
             )}
           </form>
-          {loginError && <div className="admin-alert">{loginError}</div>}
+          {loginError && (
+            <div className="admin-alert error-shake">
+              <FiAlertCircle size={16} />
+              <span>{loginError}</span>
+            </div>
+          )}
           <a className="admin-back-link" href="/">
             Kembali ke Website
           </a>

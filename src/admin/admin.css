@@ -740,6 +740,24 @@
   background: rgba(53, 18, 62, 0.72);
 }
 
+.admin-alert.error-shake {
+  animation: shakeAlert 0.4s ease-in-out;
+  border-color: rgba(231, 76, 60, 0.6);
+  background: rgba(84, 25, 30, 0.72);
+  color: #ffcccc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes shakeAlert {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-6px); }
+  100% { transform: translateX(0); }
+}
+
 .admin-alert.success {
   border-color: rgba(111, 228, 172, 0.58);
   background: rgba(26, 70, 55, 0.62);
