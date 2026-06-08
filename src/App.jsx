@@ -50,6 +50,7 @@ import {
   SiMariadb,
   SiMongodb,
   SiMysql,
+  SiNextdotjs,
   SiNodedotjs,
   SiNumpy,
   SiPandas,
@@ -57,6 +58,7 @@ import {
   SiPycharm,
   SiPython,
   SiR,
+  SiFlask,
   SiReact,
   SiScikitlearn,
   SiDiscord,
@@ -65,9 +67,9 @@ import {
   SiSpotify,
   SiStreamlit,
   SiHuggingface,
-  SiVuedotjs,
   SiTailwindcss,
-  SiNextdotjs,
+  SiVuedotjs,
+  SiBootstrap,
 } from "react-icons/si";
 import Antigravity from "./components/Antigravity";
 import SpotifyPlayer from "./components/SpotifyMiniPlayer";
@@ -278,6 +280,10 @@ export const TECH_STACK_META = {
   nextjs: { Icon: SiNextdotjs, url: "https://nextjs.org/", color: "#ffffff" },
   tailwindcss: { Icon: SiTailwindcss, url: "https://tailwindcss.com/", color: "#38b2ac" },
   react: { Icon: SiReact, url: "https://reactjs.org/", color: "#61dafb" },
+  flask: { Icon: SiFlask, url: "https://flask.palletsprojects.com/", color: "#ffffff" },
+  reactjs: { Icon: SiReact, url: "https://reactjs.org/", color: "#61dafb" },
+  googlecolab: { Icon: SiGooglecolab, url: "https://colab.research.google.com/", color: "#f9ab00" },
+  bootstrap: { Icon: SiBootstrap, url: "https://getbootstrap.com/", color: "#7952b3" },
   geolocation: {
     Icon: PiPlanetBold,
     url: "https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API",

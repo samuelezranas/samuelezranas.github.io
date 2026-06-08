@@ -48,6 +48,10 @@ import {
   SiHuggingface,
   SiTensorflow,
   SiVuedotjs,
+  SiNextdotjs,
+  SiTailwindcss,
+  SiGooglecolab,
+  SiBootstrap,
 } from "react-icons/si";
 import {
   createAboutPhoto,
@@ -251,6 +255,10 @@ const ADMIN_TECH_ICON_MAP = {
   figma: SiFigma,
   canva: SiCanva,
   flask: SiFlask,
+  nextjs: SiNextdotjs,
+  tailwindcss: SiTailwindcss,
+  googlecolab: SiGooglecolab,
+  bootstrap: SiBootstrap,
 };
 
 const normalizeTechKey = (value) =>
